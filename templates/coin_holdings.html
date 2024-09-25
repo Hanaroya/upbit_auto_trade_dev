@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Coin Holdings</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/coin_holdings.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    #graph-container {
+      display: none;
+      margin-top: 20px;
+      width: 100%;
+      position: relative;
+      z-index: 1;  /* 테이블보다 뒤에 오도록 설정 */
+    }
+    .graph {
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    table {
+      width: 100%;
+    }
+    .container {
+      margin-bottom: 210px;
+    }
+    body {
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-bar">
+    <div class="pc-menu">
+        <ul>
+            <li><a onclick="goToHome()">&#8962;</a></li>    
+            <li><a href="/coin_holdings">Coin Holding</a></li>
+            <li><a href="/trading_history">Trading History</a></li>
+            <li><a href="/trading_report">Trading Report</a></li>
+            <div class="logout-button" onclick="logout()">LOGOUT</div>
+        </ul>
+    </div>
+    <div class="mobile-menu">
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleMenu()">
+                <i class="fa fa-caret-down"></i>&#9776;</button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="/coin_holdings">Coin Holding</a>
+                <a href="/trading_history">Trading History</a>
+                <a href="/trading_report">Trading Report</a>
+            </div>
+        </div>
+        <div class="home-icon" onclick="goToHome()">&#8962;</div>
+        <div class="logout-button" onclick="logout()">LOGOUT</div>
+    </div>
+  </div>
+  <div class="title">Coin Holdings</div>
+  <div class="container">   
+    <div id="coin-container">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Coin Code</th>
+              <th>Position</th>
+              <th>Holding</th>
+              <th>Current Price</th>
+              <th>Current Percent</th>
+              <th>Price B</th>
+              <th>RSI</th>
+              <th>Deposit</th>
+              <th class="fixed-column">Graph</th>
+              <th class="fixed-column">Buy</th>
+              <th class="fixed-column">Sell</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for coin in coin_data %}
+            <tr>
+              <td>{{ coin.c_code }}</td>
+              <td>{{ coin.position }}</td>
+              <td>{{ coin.hold }}</td>
+              <td>{{ coin.current_price }}</td>
+              <td>{{ coin.current_percent }}</td>
+              <td>{{ coin.price_b }}</td>
+              <td>{{ coin.rsi }}</td>
+              <td>{{ coin.deposit }}</td>
+              <td class="fixed-column"><button class="graph-btn" data-coin='{{ coin.c_code }}'>코인 현황 그래프</button></td>
+              <td class="fixed-column">
+                <button class="buy_button" type="button" onclick="openPopup('buy', '{{ coin.c_code }}')">BUY</button>
+              </td>
+              <td class="fixed-column">
+                <button class="sell_button" type="button" onclick="openPopup('sell', '{{ coin.c_code }}')">SELL</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="graph-container">
+        <div id="main-graph" class="graph"></div>
+        <div id="rsi-graph" class="graph"></div>
+        <div id="stoch-rsi-graph" class="graph"></div>
+        <div id="macd-graph" class="graph"></div>
+      </div>
+      
+      <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+      <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    </div>
+    
+    <!-- 팝업 박스 -->
+    <div id="popup" class="popup">
+      <div id="popup-content" class="popup-content"></div>
+      <button onclick="closePopup()">Close</button>
+    </div>
+    <!-- 알림 메시지용 팝업 -->
+    <div id="alert-popup" class="alert-popup">
+      <span id="alert-message"></span>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Page</title>
+    <link rel="stylesheet" type="text/css" href="css/home.css">
+    <script>
+        function toggleMenu() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+        function goToHome() {
+            window.location.href = "/";
+        }
+        function logout() {
+            window.location.href = "/logout";
+        }
+        window.onclick = function(e) {
+            if (!e.target.matches('.dropbtn')) {
+            var myDropdown = document.getElementById("myDropdown");
+                if (myDropdown.classList.contains('show')) {
+                myDropdown.classList.remove('show');
+                }
+            }
+        }
+    </script>
+    <meta http-equiv="refresh" content="20" />
+</head>
+<body>
+    <div class="menu-bar">
+        <div class="pc-menu">
+            <ul>
+                <li><a onclick="goToHome()">&#8962;</a></li>    
+                <li><a href="/coin_holdings">Coin Holding</a></li>
+                <li><a href="/trading_history">Trading History</a></li>
+                <li><a href="/trading_report">Trading Report</a></li>
+                <div class="logout-button" onclick="logout()">LOGOUT</div>
+            </ul>
+        </div>
+        <div class="mobile-menu">
+            <div class="dropdown">
+                <button class="dropbtn" onclick="toggleMenu()">
+                    <i class="fa fa-caret-down"></i>&#9776;</button>
+                <div class="dropdown-content" id="myDropdown">
+                    <a href="/coin_holdings">Coin Holding</a>
+                    <a href="/trading_history">Trading History</a>
+                    <a href="/trading_report">Trading Report</a>
+                </div>
+            </div>
+            <div class="home-icon" onclick="goToHome()">&#8962;</div>
+            <div class="logout-button" onclick="logout()">LOGOUT</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="title">Junmo's Auto Trade</div>
+
+        <form action="/start_trading" method="POST">
+            <button id="start_trading" class="{% if test1 %}toggle-button-on{% else %}toggle-button{% endif %}" name="start_trading">Start Trading</button>
+        </form>
+        <form action="/start_simulation" method="POST">
+            <button id="start_simulation" class="{% if test2 %}toggle-button-on{% else %}toggle-button{% endif %}" name="start_simulation">Start Simulation</button>
+        </form>
+        <form action="/limit_buying" method="POST">
+            <button id="limit_buying" class="{% if test3 %}toggle-button-on{% else %}toggle-button{% endif %}" name="limit_buying">Limit Buying</button>
+        </form>
+        <form action="/limit_selling" method="POST">
+            <button id="limit_selling" class="{% if test4 %}toggle-button-on{% else %}toggle-button{% endif %}" name="limit_selling">Limit Selling</button>
+        </form>
+
+        <div class="log-mes">Log Message</div>
+        <div class="log-body">
+            Trading: {{ message1 }} <br>
+            Simulation: {{ message2 }} <br>
+            Buying Limit: {{ message3 }} <br>
+            Selling Limit: {{ message4 }} 
+        </div>
+        <h1>UBMI Report</h1>
+        <p>TOTAL UBMI: <span id="ubmi_digit">Loading...</span></p>
+        <p>UBMI: <span id="changed_ubmi">Loading...</span></p>
+        <p>Fear And Greed: <span id="fear_greed">Loading...</span></p>        
+        <script>
+            function fetchData() {
+                fetch('/ubmi')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('ubmi_digit').textContent = data.value1;
+                        document.getElementById('changed_ubmi').textContent = data.value2;
+                        document.getElementById('fear_greed').textContent = data.value3;
+                    })
+                    .catch(error => {
+                        console.error('There has been a problem with your fetch operation:', error);
+                    });
+            }
+    
+            // 페이지 로드 시 데이터 가져오기
+            fetchData();
+    
+            // 10초 마다 데이터 갱신
+            setInterval(fetchData, 10000);
+        </script>
+    </div>
+</body>
+</html>

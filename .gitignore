@@ -1,0 +1,11 @@
+.idea
+pybo.db
+*.pyc
+__pycache__
+migrations
+properties/properties
+JM_Auto_Trade.py
+*.pem
+*.ppk
+test.py
+/log

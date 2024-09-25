@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trading Report</title>
+  <link rel="stylesheet" type="text/css" href="css/trading_report.css">
+  <script>
+    function toggleMenu() {
+      document.getElementById("myDropdown").classList.toggle("show");
+    }
+    function goToHome() {
+      window.location.href = "/";
+    }
+    function logout() {
+      window.location.href = "/logout";
+    }
+    window.onclick = function(e) {
+      if (!e.target.matches('.dropbtn')) {
+      var myDropdown = document.getElementById("myDropdown");
+        if (myDropdown.classList.contains('show')) {
+          myDropdown.classList.remove('show');
+        }
+      }
+    }
+  </script>
+  <meta http-equiv="refresh" content="60" />
+</head>
+<body>
+  <div class="menu-bar">
+    <div class="pc-menu">
+        <ul>
+            <li><a onclick="goToHome()">&#8962;</a></li>    
+            <li><a href="/coin_holdings">Coin Holding</a></li>
+            <li><a href="/trading_history">Trading History</a></li>
+            <li><a href="/trading_report">Trading Report</a></li>
+            <div class="logout-button" onclick="logout()">LOGOUT</div>
+        </ul>
+    </div>
+    <div class="mobile-menu">
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleMenu()">
+                <i class="fa fa-caret-down"></i>&#9776;</button>
+            <div class="dropdown-content" id="myDropdown">
+                <a href="/coin_holdings">Coin Holding</a>
+                <a href="/trading_history">Trading History</a>
+                <a href="/trading_report">Trading Report</a>
+            </div>
+        </div>
+        <div class="home-icon" onclick="goToHome()">&#8962;</div>
+        <div class="logout-button" onclick="logout()">LOGOUT</div>
+    </div>
+  </div>
+  <div class="title">Trading Report</div>
+  <div class="container"> 
+    <table>
+      <tr>
+        <th>Invested Amount</th>
+        <th>Current Invested Amount</th>
+        <th>Current Profit</th>
+        <th>Saving Amount</th>
+        <th>Current Loss</th>
+        <th>Profit Percentage</th>
+      </tr>
+      {% for row in data %}
+      <tr>
+        <td>{{ row.or_am }}</td>
+        <td>{{ row.dp_am }}</td>
+        <td>{{ row.pr_am }}</td>
+        <td>{{ row.sv_or }}</td>
+        <td>{{ row.sv_or - row.sv_am }}</td>
+        <td>{{ row.profit_percentage }}%</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</body>
+</html>

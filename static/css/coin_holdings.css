@@ -1,0 +1,410 @@
+/* 기존 CSS */
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: #f1f1f1;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.container {
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.alert-popup {
+  display: none;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #f44336; /* 빨간색 */
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.popup {
+  display: none;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 20%; /* 가로 20% */
+  height: 30%; /* 세로 25% */
+  background-color: white;
+  border: 2px solid #ccc;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  z-index: 999;
+}
+
+.popup-content {
+  margin-bottom: 20px;
+}
+
+.logout-button {
+  position: fixed;
+  right: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 5px 10px;
+  background-color: #ccc;
+}
+
+/* 기타 기존 스타일들 */
+
+
+.home-icon {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.menu-bar {
+  background-color: darkgray;
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  z-index: 100;
+}
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  z-index: 10000;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+
+@media (min-device-width: 768px) {
+  .container {
+      width: 95%;
+      height: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+  }
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: darkslategray;
+  }
+    
+  li {
+    float: left;
+  }
+  
+  li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  /* Change the link color to #111 (black) on hover */
+  li a:hover {
+    background-color: #111;
+  }
+
+  .pc-menu {
+      /* justify-content: flex-start; */
+      height: 50px;
+  }
+  .mobile-menu{
+      display: none;
+  }
+
+  .logout-button {
+      position: fixed;
+      margin-top: 8px;
+      font-weight: bold;
+      color: darkslategray;
+      width: 70px;
+      height: 25px;
+      right: 10px;
+  }
+  .home-icon {
+      left: 0px;
+      font-size: 45px;
+      color: white;
+      position: fixed;
+  }
+  .title {
+      font-size: 60px;
+      font-style: italic;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin-bottom: 60px;
+      margin-top: 80px;
+  }
+
+  .toggle-button {
+      width: 150px;
+      margin-bottom: 5px;
+  }
+  .toggle-button-on {
+      width: 150px;
+      margin-bottom: 5px;
+  }
+  .sell_button {
+    font-size: 15px;
+  }
+}
+
+@media (max-device-width: 767px) {
+  .container {
+    height: auto;
+    max-width: 1500px;
+    width: 95%;
+    margin-top: 80px;
+    font-size: 30px;
+  }
+
+  .table{
+    width: 400px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    z-index: 10000;
+  }
+
+  tbody{
+    overflow: auto;
+    height: 100px;
+  }
+
+  thead {
+    background: black;
+    color:#fff;
+  }
+
+  th, td {
+    padding: 5px;
+    text-align: left;
+    width: 200px;
+  }
+
+  .pc-menu {
+    display: none;
+  }
+  .menu-bar{
+      height: 110px;
+      /* overflow: hidden; */
+      background-color: #333;
+      font-family: Arial, Helvetica, sans-serif;
+  }
+    
+  .mobile-menu a {
+      float: left;
+      font-size: 160px;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+  }
+
+  .dropdown {
+      float: left;
+      overflow: hidden;
+  }
+  .sell_button {
+    font-size: 35px;
+    width: 120px;
+    height: 40px;
+    text-align: center;
+  }
+    
+  .dropdown .dropbtn {
+    font-size: 75px;
+    margin-left: 10px;
+    margin-bottom: 5px;
+    color: white;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+  }
+    
+  .menu-bar>.mobile-menu a:hover, .dropdown:hover .dropbtn, .dropbtn:focus .home-icon:hover {
+      background-color: darkslategray;
+  }
+    
+  .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: darkslategray;
+      min-width: 100%;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 10001;
+      align-items: center;
+  }
+    
+  .dropdown-content a {
+      float: none;
+      height: max-content;
+      font-size: 60px;
+      font-style: italic;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      padding: 12px 16px;
+      text-decoration: none;
+      margin-bottom: 10px;
+      display: block;
+      text-align: left;
+  }
+    
+  .dropdown-content a:hover {
+      background-color: #ddd;
+  }
+    
+  .show {
+      display: block;
+  }
+  .title {
+      font-size: 80px;
+      font-style: italic;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin-top: 200px;
+  }
+
+  .mobile-menu {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 20px;
+      background-color: darkslategray;
+  }
+
+  .home-icon {
+    font-size: 100px;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-top: -5px;
+    color: white;
+  }
+
+  .logout-button {
+      font-size: 45px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 10px 5px 10px 10px;
+      background-color: #ccc;
+      margin-right: 30px;
+  }
+  .button-group {
+      flex-direction: column;
+      align-items: stretch;
+  }
+
+  .toggle-button {
+      width: 60%;
+      height: 100px;
+      font-size: 50px;
+      font-weight: 600;
+      margin-bottom: 15px;
+  }
+  .toggle-button-on {
+      width: 60%;
+      height: 100px;
+      font-size: 50px;
+      font-weight: 500;   
+      margin-bottom: 15px;
+  }
+}
+
+/* 모바일 대응을 위한 미디어 쿼리 추가 */
+@media screen and (max-width: 768px) {
+  /* 컨테이너 여백 조정 */
+  .container {
+    margin-bottom: 100px;
+    padding: 0 10px;
+  }
+
+  /* 테이블을 슬라이드 가능하게 설정 */
+  .table-container {
+    overflow-x: auto;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  table {
+    display: inline-block;
+    width: auto;
+    min-width: 100%;
+  }
+
+  table th, table td {
+    padding: 5px 2px;
+    white-space: nowrap;
+  }
+
+  /* 고정 열 스타일 */
+  .fixed-column {
+    position: sticky;
+    right: 0;
+    background: white;
+    z-index: 1;
+  }
+
+  /* 버튼 크기 조정 */
+  .graph-btn, .buy_button, .sell_button {
+    padding: 5px;
+    font-size: 10px;
+  }
+
+  /* 그래프 컨테이너 조정 */
+  #graph-container {
+    margin-top: 10px;
+  }
+
+  .graph {
+    margin-bottom: 10px;
+  }
+
+  /* 메뉴바 스타일 수정 */
+  .menu-bar {
+    padding: 5px;
+  }
+
+  .pc-menu {
+    display: none;
+  }
+
+  .mobile-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .dropdown-content {
+    min-width: 120px;
+  }
+
+  /* 팝업 크기 조정 */
+  .popup-content {
+    width: 90%;
+    max-width: 300px;
+  }
+}
