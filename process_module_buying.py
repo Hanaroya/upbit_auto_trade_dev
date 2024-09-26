@@ -156,15 +156,24 @@ def case1_check(trade_factors, case1_chk):
     return False
 
 def case2_check(trade_factors, sma200):
-    up_1 = (trade_factors.iloc[-1]['high'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
-    low_1 = (trade_factors.iloc[-1]['low'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
-    up_2 = (trade_factors.iloc[-2]['high'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
-    low_2 = (trade_factors.iloc[-2]['low'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100 # 계단 형식의 상승폭을 보일때를 체크하기 위한 case 2
-    if ((up_1 > 0.15 and low_1 > -0.5) and (up_1 > up_2) and (low_1 > low_2)
+    if trade_factors.iloc[-1]['signal'] > 0: # 상승세 확인 장치
+        if (((trade_factors.iloc[-1]['signal'] * 1.10) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2)
+                ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
+        ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
+        ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']
         ) and ((sma200.iloc[-1]['sma20'] * 1.05) < sma200.iloc[-1]['sma10']
         ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90
         ) and (sma_check(trade_factors=sma200) == True):
-        return True 
+            return True
+    # up_1 = (trade_factors.iloc[-1]['high'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
+    # low_1 = (trade_factors.iloc[-1]['low'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
+    # up_2 = (trade_factors.iloc[-2]['high'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
+    # low_2 = (trade_factors.iloc[-2]['low'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100 # 계단 형식의 상승폭을 보일때를 체크하기 위한 case 2
+    # if ((up_1 > 0.15 and low_1 > -0.5) and (up_1 > up_2) and (low_1 > low_2)
+    #     ) and ((sma200.iloc[-1]['sma20'] * 1.05) < sma200.iloc[-1]['sma10']
+    #     ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90
+    #     ) and (sma_check(trade_factors=sma200) == True):
+    #     return True 
     return False
         
 def sma_check(trade_factors):
