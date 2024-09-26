@@ -385,7 +385,7 @@ def selling_process_wrapper(): # 판매용 메소드 실행시키기
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
 
-@scheduler.task('interval', id='buy_check_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=1)
+@scheduler.task('cron', id='buy_check_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=1)
 def buy_check_wrapper(): # 실제 구매 기록이 있을시 5초마다 해당 uuid 조회
     if buy_check_lock.acquire(blocking=False):
         try:
