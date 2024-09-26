@@ -184,7 +184,7 @@ selling_process_lock = threading.Lock()
 buy_check_lock = threading.Lock()
 sell_check_lock = threading.Lock()
 
-@scheduler.task('cron', id='hourly_report', coalesce=False, max_instances=1, minute=0, misfire_grace_time=1)
+@scheduler.task('cron', id='hourly_report', coalesce=False, max_instances=1, minute=0, second=0, misfire_grace_time=1)
 def hourly_report(): # 1시간 간격 리포트 전송 
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
