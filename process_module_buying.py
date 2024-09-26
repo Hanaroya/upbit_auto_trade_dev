@@ -141,17 +141,17 @@ def coin_receive_buying(c_rank):
 
 def case1_check(trade_factors, case1_chk):
     if (case1_chk == True): # MACD 값을 기본으로 이전 MACD 값 보다 현재 MACD 값이 더 큰지 그리고 스토케스틱 RSI도 같은 방식으로 확인 하는 case 1
-        if trade_factors.iloc[-1]['signal'] > 0:
-            if (((trade_factors.iloc[-1]['signal'] * 1.10) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2)
-                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
-            ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
-                return True
-        if trade_factors.iloc[-1]['signal'] < 0:
-            if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
-                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
-            ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
+        # if trade_factors.iloc[-1]['signal'] > 0:
+        #     if (((trade_factors.iloc[-1]['signal'] * 1.10) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2)
+        #          ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
+        #     ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
+        #     ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
+        #         return True
+        if trade_factors.iloc[-2]['signal'] < 0 and trade_factors.iloc[-2]['macd'] < 0: # 최저점 확인 장치
+            if ((trade_factors.iloc[-2]['signal'] * 1.4) > (trade_factors.iloc[-2]['macd'] > (trade_factors.iloc[-2]['signal'] * 1.9) 
+                 ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
+            ) and (trade_factors.iloc[-3]['rsi_K'] < 20
+            ) and (trade_factors.iloc[-3]['rsi_D'] < 20):
                 return True
     return False
 
