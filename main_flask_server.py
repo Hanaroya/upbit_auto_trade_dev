@@ -216,7 +216,7 @@ def five_min_ubmi_update(): #  UBMI 지수 (코인 거래량) 체크용 5분 간
     mmp.five_min_ubmi_update()
 
 
-@scheduler.task('cron', id='daily_report', coalesce=False, max_instances=1,  hour='19-21', second='*/20', second=0, misfire_grace_time=1)
+@scheduler.task('cron', id='daily_report', coalesce=False, max_instances=1,  hour='19-21', second='*/20', misfire_grace_time=1)
 def daily_report():
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
