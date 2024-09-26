@@ -226,7 +226,8 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     
     if up_chk_b < -3.95 and str(t_record['position']).find("emergency") == -1: 
         t_record['position'] = 'emergency 5 -4% check'
-    
+    if up_chk_b > 1.95 and str(t_record['position']).find("emergency") == -1: 
+        t_record['position'] = 'emergency 6 2% check'
 
     info = {
         'sell_uuid': '', 
