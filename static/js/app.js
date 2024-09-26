@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function () {
   const buttons = document.querySelectorAll('.graph-btn');
   buttons.forEach(button => {
@@ -18,14 +17,13 @@ async function toggleGraphDisplay(coinCode) {
   }
 
   try {
-      const url = `/coin_graph?coin_code=${coinCode}`;
-      const response = await fetch(url);
+      const response = await fetch(`/coin_graph?coin_code=${coinCode}`);
       const data = await response.json();
 
-      const mainGraphData = data.main_data.slice(-200);
-      const rsiData = data.rsi_data.slice(-200);
-      const stochRsiData = data.stoch_rsi_data.slice(-200);
-      const macdData = data.macd_data.slice(-200);
+      const mainGraphData = data.main_data.slice(-20); // 최근 20개 데이터만 표시
+      const rsiData = data.rsi_data.slice(-20);
+      const stochRsiData = data.stoch_rsi_data.slice(-20);
+      const macdData = data.macd_data.slice(-20);
 
       drawMainGraph(mainGraphData);
       drawRSIGraph(rsiData);
@@ -63,6 +61,7 @@ function drawMainGraph(data) {
       chart: {
           type: 'candlestick',
           height: 350,
+          width: '70%', // 그래프 너비를 테이블 너비의 70%로 설정
           zoom: {
               enabled: true
           }
@@ -91,6 +90,12 @@ function drawMainGraph(data) {
                   return val.toFixed(2);
               }
           }
+      },
+      markers: {
+        size: 0
+      },
+      stroke: {
+          width: [1, 1]
       }
   };
 
@@ -109,13 +114,14 @@ function drawRSIGraph(data) {
       }],
       chart: {
           type: 'line',
-          height: 150,
+          height: 225, // 기존 높이의 50% 증가
+          width: '70%',
           zoom: {
               enabled: true
           }
       },
       stroke: {
-        width: 1 // 선 두께를 1로 설정
+          width: 1 // 선 두께를 1로 설정
       },
       xaxis: {
           type: 'datetime',
@@ -146,13 +152,14 @@ function drawStochRSIGraph(data) {
       }],
       chart: {
           type: 'line',
-          height: 150,
+          height: 225, // 기존 높이의 50% 증가
+          width: '70%',
           zoom: {
               enabled: true
           }
       },
       stroke: {
-        width: 1 // 선 두께를 1로 설정
+          width: 1 // 선 두께를 1로 설정
       },
       xaxis: {
           type: 'datetime',
@@ -183,13 +190,14 @@ function drawMACDGraph(data) {
       }],
       chart: {
           type: 'line',
-          height: 150,
+          height: 225, // 기존 높이의 50% 증가
+          width: '70%',
           zoom: {
               enabled: true
           }
       },
       stroke: {
-        width: 1 // 선 두께를 1로 설정
+          width: 1 // 선 두께를 1로 설정
       },
       xaxis: {
           type: 'datetime',

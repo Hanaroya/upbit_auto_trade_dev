@@ -2,6 +2,7 @@ import atexit
 import json
 from flask import Flask, jsonify, make_response, redirect, render_template, request
 from flask_bootstrap import Bootstrap
+from flask_apscheduler import APScheduler
 import datetime
 import logging
 from multiprocessing import Process, Queue, Manager, Value
@@ -33,6 +34,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import process_module_buying as mb
 import process_module_selling as ms
 
+# 기본 설정 세팅
 myprops = gp.get_properties()
 st = False
 ss = False
@@ -42,10 +44,23 @@ message1 = "초기 상태 입니다."
 message2 = "초기 상태 입니다."
 message3 = "초기 상태 입니다."
 message4 = "초기 상태 입니다."
+# 기본 메시지 + 중요 아이디, 비밀번호 불러오는 파트
+
+#플라스크 선언 + 스캐쥴러 + 부트스트렙 선언
+class Config:
+    SCHEDULER_API_ENABLED = True
+    
 app = Flask(__name__, static_url_path='')
+app.config.from_object(Config())
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 Bootstrap(app)
+#플라스크 선언 + 스캐쥴러 + 부트스트렙 선언
+
+
 # Mocked user data with encrypted passwords
-users = [
+users = [ # 로그인 데이터
     {'id': 1, 'username': myprops['site_user'], 'password': generate_password_hash(myprops['password'])},
 ]
 
@@ -138,9 +153,39 @@ def selling_process():
         print(f"Error: {e}")
     finally:
         comnQueryWrk(curs, conn,"UPDATE trading_list SET sell_list_chk={} WHERE coin_key=1".format(False))
-        comnQueryCls(curs, conn)
+        comnQueryCls(curs, conn) 
 
-def hourly_report():
+def terminate_process():
+    conn, curs = comnQueryStrt()
+    try:
+        tt = comnQuerySel(curs, conn,"SELECT terminate FROM trade_rules WHERE coin_key=1")[0]['terminate']
+        if tt == True:
+            mmp.daily_report()
+            mmp.server_ask_close()
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    comnQueryCls(curs, conn)
+    
+
+###################################################################################################
+# APScheduler 설정 각 스캐쥴 마다 terminate 확인 체크 필요
+###################################################################################################
+
+import threading
+from apscheduler.schedulers.background import BackgroundScheduler
+
+# 각 함수에 대한 잠금 객체 생성
+buying_process_lock1 = threading.Lock()
+buying_process_lock2 = threading.Lock()
+buying_process_lock3 = threading.Lock()
+buying_process_lock4 = threading.Lock()
+buying_process_lock5 = threading.Lock()
+selling_process_lock = threading.Lock()
+buy_check_lock = threading.Lock()
+sell_check_lock = threading.Lock()
+
+@scheduler.task('cron', id='hourly_report', coalesce=False, max_instances=1, minute=0, misfire_grace_time=1)
+def hourly_report(): # 1시간 간격 리포트 전송 
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
     try: 
@@ -152,7 +197,8 @@ def hourly_report():
         print(f"Error: {e}")
     comnQueryCls(curs, conn)
 
-def hourly_coin_list_check():
+@scheduler.task('cron', id='hourly_coin_list_check', coalesce=False, max_instances=1, minute='*/30', misfire_grace_time=1)
+def hourly_coin_list_check():  # 30분 간격 코인 리스트 다시 정렬 (거래 대금순)
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
     try: 
@@ -164,11 +210,13 @@ def hourly_coin_list_check():
         print(f"Error: {e}")
     comnQueryCls(curs, conn)
 
-def five_min_ubmi_update():
+@scheduler.task('cron', id='five_min_ubmi_update', coalesce=False, max_instances=1, minute='*/5', misfire_grace_time=1)
+def five_min_ubmi_update(): #  UBMI 지수 (코인 거래량) 체크용 5분 간격
     # if 작동중 체크, 
     mmp.five_min_ubmi_update()
 
 
+@scheduler.task('cron', id='daily_report', coalesce=False, max_instances=1,  hour='19-21', second='*/20', misfire_grace_time=1)
 def daily_report():
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
@@ -181,7 +229,19 @@ def daily_report():
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     comnQueryCls(curs, conn)
+
+@scheduler.task('cron', id='daily_report_chk', coalesce=False, max_instances=1, hour='5-18', minute='*/20', misfire_grace_time=1)
+def daily_report_chk():
+    conn, curs = comnQueryStrt()
+    try: 
+        dt = comnQuerySel(curs, conn,"SELECT daily_report_chk FROM trade_rules WHERE coin_key=1")[0]['daily_report_chk']
+        if dt == True:
+            comnQueryWrk(curs, conn, "UPDATE trade_rules SET daily_report_chk={} WHERE coin_key=1".format(False))
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    comnQueryCls(curs, conn)   
     
+@scheduler.task('cron', id='buy_check', coalesce=False, max_instances=1, second="*/10", misfire_grace_time=1)
 def buy_check():
     conn, curs = comnQueryStrt()
     try:
@@ -208,7 +268,8 @@ def buy_check():
     finally:
         comnQueryWrk(curs, conn,"UPDATE trading_list SET buy_chk={} WHERE coin_key=1".format(False))
         comnQueryCls(curs, conn)
-
+        
+@scheduler.task('cron', id='sell_check', coalesce=False, max_instances=1, second="*/10", misfire_grace_time=1)
 def sell_check():
     conn, curs = comnQueryStrt()
     try:
@@ -248,6 +309,7 @@ def sell_check():
         comnQueryWrk(curs, conn,"UPDATE trading_list SET sell_chk={} WHERE coin_key=1".format(False))
         comnQueryCls(curs, conn)
 
+@scheduler.task('cron', id='get_real_balance', coalesce=False, max_instances=1, second="*/30", misfire_grace_time=1)
 def get_real_balance():
     conn, curs = comnQueryStrt()
     try: 
@@ -263,46 +325,8 @@ def get_real_balance():
         print(f"Error: {e}")
     comnQueryCls(curs, conn)
 
-def daily_report_chk():
-    conn, curs = comnQueryStrt()
-    try: 
-        dt = comnQuerySel(curs, conn,"SELECT daily_report_chk FROM trade_rules WHERE coin_key=1")[0]['daily_report_chk']
-        if dt == True:
-            comnQueryWrk(curs, conn, "UPDATE trade_rules SET daily_report_chk={} WHERE coin_key=1".format(False))
-    except pymysql.MySQLError as e:
-        print(f"Error: {e}")
-    comnQueryCls(curs, conn)    
-
-def terminate_process():
-    conn, curs = comnQueryStrt()
-    try:
-        tt = comnQuerySel(curs, conn,"SELECT terminate FROM trade_rules WHERE coin_key=1")[0]['terminate']
-        if tt == True:
-            mmp.daily_report()
-            mmp.server_ask_close()
-    except pymysql.MySQLError as e:
-        print(f"Error: {e}")
-    comnQueryCls(curs, conn)
-    
-
-###################################################################################################
-# APScheduler 설정 각 스캐쥴 마다 terminate 확인 체크 필요
-###################################################################################################
-
-import threading
-from apscheduler.schedulers.background import BackgroundScheduler
-
-# 각 함수에 대한 잠금 객체 생성
-buying_process_lock1 = threading.Lock()
-buying_process_lock2 = threading.Lock()
-buying_process_lock3 = threading.Lock()
-buying_process_lock4 = threading.Lock()
-buying_process_lock5 = threading.Lock()
-selling_process_lock = threading.Lock()
-buy_check_lock = threading.Lock()
-sell_check_lock = threading.Lock()
-
-def buying_process_wrapper1(*args):
+@scheduler.task('cron', id='buying_process_wrapper1', coalesce=False, max_instances=1, second='*/3', args=[1], misfire_grace_time=1)        
+def buying_process_wrapper1(*args): # 구매용 매소드 실행시키기
     if buying_process_lock1.acquire(blocking=False):
         try:
             buying_process(*args)
@@ -311,7 +335,8 @@ def buying_process_wrapper1(*args):
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
     
-def buying_process_wrapper2(*args):
+@scheduler.task('cron', id='buying_process_wrapper2', coalesce=False, max_instances=1, second='*/6', args=[2], misfire_grace_time=1)        
+def buying_process_wrapper2(*args): # 구매용 매소드 실행시키기
     if buying_process_lock2.acquire(blocking=False):
         try:
             buying_process(*args)
@@ -320,7 +345,8 @@ def buying_process_wrapper2(*args):
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
     
-def buying_process_wrapper3(*args):
+@scheduler.task('cron', id='buying_process_wrapper3', coalesce=False, max_instances=1, second='*/6', args=[3], misfire_grace_time=1)        
+def buying_process_wrapper3(*args): # 구매용 매소드 실행시키기
     if buying_process_lock3.acquire(blocking=False):
         try:
             buying_process(*args)
@@ -329,7 +355,8 @@ def buying_process_wrapper3(*args):
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-def buying_process_wrapper4(*args):
+@scheduler.task('cron', id='buying_process_wrapper4', coalesce=False, max_instances=1, second='*/6', args=[4], misfire_grace_time=1)        
+def buying_process_wrapper4(*args): # 구매용 매소드 실행시키기
     if buying_process_lock4.acquire(blocking=False):
         try:
             buying_process(*args)
@@ -337,8 +364,9 @@ def buying_process_wrapper4(*args):
             buying_process_lock4.release()
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
-        
-def buying_process_wrapper5(*args):
+
+@scheduler.task('cron', id='buying_process_wrapper5', coalesce=False, max_instances=1, second='*/6', args=[5], misfire_grace_time=1)        
+def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
     if buying_process_lock5.acquire(blocking=False):
         try:
                 buying_process(*args)
@@ -347,7 +375,8 @@ def buying_process_wrapper5(*args):
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-def selling_process_wrapper():
+@scheduler.task('cron', id='selling_process_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=1)
+def selling_process_wrapper(): # 판매용 메소드 실행시키기
     if selling_process_lock.acquire(blocking=False):
         try:
             selling_process()
@@ -356,7 +385,8 @@ def selling_process_wrapper():
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
 
-def buy_check_wrapper():
+@scheduler.task('interval', id='buy_check_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=1)
+def buy_check_wrapper(): # 실제 구매 기록이 있을시 5초마다 해당 uuid 조회
     if buy_check_lock.acquire(blocking=False):
         try:
             buy_check()
@@ -365,7 +395,8 @@ def buy_check_wrapper():
     else:
         print("이전 buy_check가 아직 실행 중입니다.")
 
-def sell_check_wrapper():
+@scheduler.task('cron', id='sell_check_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=1)
+def sell_check_wrapper(): # 실제 판매 기록이 있을시 5초마다 해당 uuid 조회
     if sell_check_lock.acquire(blocking=False):
         try:
             sell_check()
@@ -374,32 +405,10 @@ def sell_check_wrapper():
     else:
         print("이전 sell_check가 아직 실행 중입니다.")
 
-scheduler = BackgroundScheduler(daemon=True, timezone='Asia/Seoul')
-# 기본 작업 설정 추가
-scheduler.configure(job_defaults={'coalesce': False, 'max_instances': 1})
-scheduler.remove_all_jobs()  # 스케줄러 초기화
-scheduler.add_job(func=five_min_ubmi_update, trigger="cron", minute="*/5") # UBMI 지수 (코인 거래량) 체크용 5분 간격
-scheduler.add_job(func=buying_process_wrapper1, args=(1,), trigger="cron", second="*/6") # 구매용 매소드 실행시키기
-scheduler.add_job(func=buying_process_wrapper2, args=(2,), trigger="cron", second="*/12") # 구매용 매소드 실행시키기 
-scheduler.add_job(func=buying_process_wrapper3, args=(3,), trigger="cron", second="*/18") # 구매용 매소드 실행시키기 
-scheduler.add_job(func=buying_process_wrapper4, args=(4,), trigger="cron", second="*/24") # 구매용 매소드 실행시키기 
-scheduler.add_job(func=buying_process_wrapper5, args=(5,), trigger="cron", second="*/30") # 구매용 매소드 실행시키기 
-scheduler.add_job(func=selling_process_wrapper, trigger="cron", second="*/6") # 판매용 메소드 실행시키기
-scheduler.add_job(func=hourly_report, trigger="cron", minute=0) # 1시간 간격 리포트 전송 
-scheduler.add_job(func=hourly_coin_list_check, trigger="cron",  minute='*/30') # 30분 간격 코인 리스트 다시 정렬 (거래 대금순)
-scheduler.add_job(func=daily_report, trigger='cron', hour='19-21', second='*/20') # 매일 투자결과 리포트 7~10시 20초 간격
-scheduler.add_job(func=daily_report_chk, trigger='cron', hour='5-18', minute='*/20') # 매일 투자결과 리포트 7~10시 20초 간격
-scheduler.add_job(func=buy_check, trigger='cron', second="*/10") # 실제 구매 기록이 있을시 5초마다 해당 uuid 조회
-scheduler.add_job(func=sell_check, trigger='cron', second="*/10") # 실제 판매 기록이 있을시 5초마다 해당 uuid 조회
-scheduler.add_job(func=get_real_balance, trigger='cron', second="*/30") # 실제 호출 가능한 금액을 확인하는 스캐쥴 30초 간격 (아니면 구매나 판매시 해당 기능을 활성화 할것)
-# 시뮬레이션으로 구매한 코인을 실제로 구매했을때 우선 배치 처리해야함
-# 실제 구매한 코인을 구매, 판매시 얼마만큼을 구매할지 정해야함 구매시 구매 금액 입력창을 판매시 판매 볼륨을 정해야함 
-scheduler.start()
-
-# 스케줄러 종료를 위한 코드
-atexit.register(lambda: scheduler.shutdown())
+############ 플라스크 종료를 위한 코드 ##############
+# atexit.register(lambda: scheduler.shutdown())
 atexit.register(lambda: mmp.server_ask_close())
-###################################################################################################
+############ 플라스크 종료를 위한 코드 ##############
 
 @app.route('/ubmi')
 def get_data():
