@@ -376,11 +376,15 @@ th {
 
   /* 그래프 컨테이너 조정 */
   #graph-container {
+    width: 100%;
+    flex-direction: column;
     margin-top: 10px;
+    align-items: center;
   }
 
   .graph {
     margin-bottom: 10px;
+    align-items: center;
   }
 
   /* 메뉴바 스타일 수정 */

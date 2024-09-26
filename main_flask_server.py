@@ -504,7 +504,7 @@ def coin_holdings():
         
         conn, curs = comnQueryStrt()
         # Retrieve data from the coin_holding table
-        coin_data = comnQuerySel(curs, conn,"SELECT * FROM coin_holding ORDER BY r_holding DESC")
+        coin_data = comnQuerySel(curs, conn,"SELECT * FROM coin_holding ORDER BY current_percent ASC")
         comnQueryCls(curs, conn)
         # Render the HTML template with the coin data
         return render_template('coin_holdings.html', coin_data=coin_data)

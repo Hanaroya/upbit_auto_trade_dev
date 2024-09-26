@@ -96,11 +96,18 @@
           </tbody>
         </table>
       </div>
-      <div id="graph-container">
-        <div id="main-graph" class="graph"></div>
-        <div id="rsi-graph" class="graph"></div>
-        <div id="stoch-rsi-graph" class="graph"></div>
-        <div id="macd-graph" class="graph"></div>
+      <div id="graph-container" style="display: none; text-align: center;">
+        <div id="main-graph"></div>
+        <input type="range" id="main-graph-slider" min="0" max="180" step="1" value="180" oninput="updateMainGraph(this.value)">
+      
+        <div id="rsi-graph"></div>
+        <input type="range" id="rsi-graph-slider" min="0" max="180" step="1" value="180" oninput="updateRSIGraph(this.value)">
+      
+        <div id="stoch-rsi-graph"></div>
+        <input type="range" id="stoch-rsi-graph-slider" min="0" max="180" step="1" value="180" oninput="updateStochRSIGraph(this.value)">
+      
+        <div id="macd-graph"></div>
+        <input type="range" id="macd-graph-slider" min="0" max="180" step="1" value="180" oninput="updateMACDGraph(this.value)">
       </div>
       
       <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>

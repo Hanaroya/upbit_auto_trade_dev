@@ -1,102 +1,126 @@
 document.addEventListener('DOMContentLoaded', function () {
   const buttons = document.querySelectorAll('.graph-btn');
   buttons.forEach(button => {
-      button.addEventListener('click', function () {
-          const coinCode = this.getAttribute('data-coin');
-          toggleGraphDisplay(coinCode);
-      });
+    button.addEventListener('click', function () {
+      const coinCode = this.getAttribute('data-coin');
+      toggleGraphDisplay(coinCode);
+    });
   });
 });
+
+let allMainGraphData = [];
+let allRSIData = [];
+let allStochRSIData = [];
+let allMACDData = [];
 
 async function toggleGraphDisplay(coinCode) {
   const graphContainer = document.getElementById('graph-container');
 
   if (graphContainer.style.display === 'block') {
-      graphContainer.style.display = 'none';  // 그래프를 숨깁니다.
-      return;
+    graphContainer.style.display = 'none';  // 그래프를 숨깁니다.
+    return;
   }
 
   try {
-      const response = await fetch(`/coin_graph?coin_code=${coinCode}`);
-      const data = await response.json();
+    const response = await fetch(`/coin_graph?coin_code=${coinCode}`);
+    const data = await response.json();
 
-      const mainGraphData = data.main_data.slice(-20); // 최근 20개 데이터만 표시
-      const rsiData = data.rsi_data.slice(-20);
-      const stochRsiData = data.stoch_rsi_data.slice(-20);
-      const macdData = data.macd_data.slice(-20);
+    allMainGraphData = data.main_data.slice(-200);
+    allRSIData = data.rsi_data.slice(-200);
+    allStochRSIData = data.stoch_rsi_data.slice(-200);
+    allMACDData = data.macd_data.slice(-200);
 
-      drawMainGraph(mainGraphData);
-      drawRSIGraph(rsiData);
-      drawStochRSIGraph(stochRsiData);
-      drawMACDGraph(macdData);
+    drawMainGraph(allMainGraphData.slice(-20));
+    drawRSIGraph(allRSIData.slice(-20));
+    drawStochRSIGraph(allStochRSIData.slice(-20));
+    drawMACDGraph(allMACDData.slice(-20));
 
-      // 그래프 컨테이너를 토글합니다.
-      if (graphContainer.style.display === 'none' || graphContainer.style.display === '') {
-        graphContainer.style.display = 'block';
-      } else {
-        graphContainer.style.display = 'none';
-      }  // 그래프를 보이게 합니다.
-      window.scrollTo({ top: graphContainer.offsetTop, behavior: 'smooth' });  // 스크롤을 그래프 컨테이너로 이동합니다.
-      
+    graphContainer.style.display = 'block';
+    window.scrollTo({ top: graphContainer.offsetTop, behavior: 'smooth' });
+    
   } catch (error) {
-      console.error('Error fetching graph data:', error);
+    console.error('Error fetching graph data:', error);
   }
+}
+
+function updateMainGraph(value) {
+  const startIndex = parseInt(value);
+  const endIndex = startIndex + 20;
+  drawMainGraph(allMainGraphData.slice(startIndex, endIndex));
+}
+
+function updateRSIGraph(value) {
+  const startIndex = parseInt(value);
+  const endIndex = startIndex + 20;
+  drawRSIGraph(allRSIData.slice(startIndex, endIndex));
+}
+
+function updateStochRSIGraph(value) {
+  const startIndex = parseInt(value);
+  const endIndex = startIndex + 20;
+  drawStochRSIGraph(allStochRSIData.slice(startIndex, endIndex));
+}
+
+function updateMACDGraph(value) {
+  const startIndex = parseInt(value);
+  const endIndex = startIndex + 20;
+  drawMACDGraph(allMACDData.slice(startIndex, endIndex));
 }
 
 function drawMainGraph(data) {
   const options = {
-      series: [{
-          name: 'Candles',
-          data: data.map(item => ({
-              x: new Date(item.date),
-              y: [item.open, item.high, item.low, item.close]
-          }))
-      }, {
-          name: 'Volume',
-          data: data.map(item => ({
-              x: new Date(item.date),
-              y: item.volume
-          }))
-      }],
-      chart: {
-          type: 'candlestick',
-          height: 350,
-          width: '70%', // 그래프 너비를 테이블 너비의 70%로 설정
-          zoom: {
-              enabled: true
-          }
-      },
-      xaxis: {
-          type: 'datetime',
-          labels: {
-            datetimeUTC: false
-          }
-      },
-      yaxis: [{
-          title: {
-              text: 'Price'
-          }
-      }, {
-          opposite: true,
-          title: {
-              text: 'Volume'
-          }
-      }],
-      tooltip: {
-          shared: true,
-          intersect: false,
-          y: {
-              formatter: function (val) {
-                  return val.toFixed(2);
-              }
-          }
-      },
-      markers: {
-        size: 0
-      },
-      stroke: {
-          width: [1, 1]
+    series: [{
+      name: 'Candles',
+      data: data.map(item => ({
+        x: new Date(item.date),
+        y: [item.open, item.high, item.low, item.close]
+      }))
+    }, {
+      name: 'Volume',
+      data: data.map(item => ({
+        x: new Date(item.date),
+        y: item.volume
+      }))
+    }],
+    chart: {
+      type: 'candlestick',
+      height: 350,
+      width: '70%',
+      zoom: {
+        enabled: true
       }
+    },
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        datetimeUTC: false
+      }
+    },
+    yaxis: [{
+      title: {
+        text: 'Price'
+      }
+    }, {
+      opposite: true,
+      title: {
+        text: 'Volume'
+      }
+    }],
+    tooltip: {
+      shared: true,
+      intersect: false,
+      y: {
+        formatter: function (val) {
+          return val.toFixed(2);
+        }
+      }
+    },
+    markers: {
+      size: 0
+    },
+    stroke: {
+      width: [1, 1]
+    }
   };
 
   const chart = new ApexCharts(document.querySelector("#main-graph"), options);
@@ -105,30 +129,30 @@ function drawMainGraph(data) {
 
 function drawRSIGraph(data) {
   const options = {
-      series: [{
-          name: 'RSI',
-          data: data.map(item => ({
-              x: new Date(item.date),
-              y: item.rsi
-          }))
-      }],
-      chart: {
-          type: 'line',
-          height: 225, // 기존 높이의 50% 증가
-          width: '70%',
-          zoom: {
-              enabled: true
-          }
-      },
-      stroke: {
-          width: 1 // 선 두께를 1로 설정
-      },
-      xaxis: {
-          type: 'datetime',
-          labels: {
-            datetimeUTC: false
-          }
+    series: [{
+      name: 'RSI',
+      data: data.map(item => ({
+        x: new Date(item.date),
+        y: item.rsi
+      }))
+    }],
+    chart: {
+      type: 'line',
+      height: 225,
+      width: '70%',
+      zoom: {
+        enabled: true
       }
+    },
+    stroke: {
+      width: 1
+    },
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        datetimeUTC: false
+      }
+    }
   };
 
   const chart = new ApexCharts(document.querySelector("#rsi-graph"), options);
@@ -137,36 +161,36 @@ function drawRSIGraph(data) {
 
 function drawStochRSIGraph(data) {
   const options = {
-      series: [{
-          name: 'Stoch RSI K',
-          data: data.map(item => ({
-              x: new Date(item.date),
-              y: item.rsi_K
-          }))
-      }, {
-          name: 'Stoch RSI D',
-          data: data.map(item => ({
-              x: new Date(item.date),
-              y: item.rsi_D
-          }))
-      }],
-      chart: {
-          type: 'line',
-          height: 225, // 기존 높이의 50% 증가
-          width: '70%',
-          zoom: {
-              enabled: true
-          }
-      },
-      stroke: {
-          width: 1 // 선 두께를 1로 설정
-      },
-      xaxis: {
-          type: 'datetime',
-          labels: {
-            datetimeUTC: false
-          }
+    series: [{
+      name: 'Stoch RSI K',
+      data: data.map(item => ({
+        x: new Date(item.date),
+        y: item.rsi_K
+      }))
+    }, {
+      name: 'Stoch RSI D',
+      data: data.map(item => ({
+        x: new Date(item.date),
+        y: item.rsi_D
+      }))
+    }],
+    chart: {
+      type: 'line',
+      height: 225,
+      width: '70%',
+      zoom: {
+        enabled: true
       }
+    },
+    stroke: {
+      width: 1
+    },
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        datetimeUTC: false
+      }
+    }
   };
 
   const chart = new ApexCharts(document.querySelector("#stoch-rsi-graph"), options);
@@ -175,36 +199,36 @@ function drawStochRSIGraph(data) {
 
 function drawMACDGraph(data) {
   const options = {
-      series: [{
-          name: 'MACD',
-          data: data.map(item => ({
-              x: new Date(item.date),
-              y: item.macd
-          }))
-      }, {
-          name: 'Signal',
-          data: data.map(item => ({
-              x: new Date(item.date),
-              y: item.signal
-          }))
-      }],
-      chart: {
-          type: 'line',
-          height: 225, // 기존 높이의 50% 증가
-          width: '70%',
-          zoom: {
-              enabled: true
-          }
-      },
-      stroke: {
-          width: 1 // 선 두께를 1로 설정
-      },
-      xaxis: {
-          type: 'datetime',
-          labels: {
-            datetimeUTC: false
-          }
+    series: [{
+      name: 'MACD',
+      data: data.map(item => ({
+        x: new Date(item.date),
+        y: item.macd
+      }))
+    }, {
+      name: 'Signal',
+      data: data.map(item => ({
+        x: new Date(item.date),
+        y: item.signal
+      }))
+    }],
+    chart: {
+      type: 'line',
+      height: 225,
+      width: '70%',
+      zoom: {
+        enabled: true
       }
+    },
+    stroke: {
+      width: 1
+    },
+    xaxis: {
+      type: 'datetime',
+      labels: {
+        datetimeUTC: false
+      }
+    }
   };
 
   const chart = new ApexCharts(document.querySelector("#macd-graph"), options);
