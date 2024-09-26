@@ -197,7 +197,7 @@ def hourly_report(): # 1시간 간격 리포트 전송
         print(f"Error: {e}")
     comnQueryCls(curs, conn)
 
-@scheduler.task('cron', id='hourly_coin_list_check', coalesce=False, max_instances=1, minute='*/30', misfire_grace_time=1)
+@scheduler.task('cron', id='hourly_coin_list_check', coalesce=False, max_instances=1, minute='*/30', second=0, misfire_grace_time=1)
 def hourly_coin_list_check():  # 30분 간격 코인 리스트 다시 정렬 (거래 대금순)
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
@@ -216,7 +216,7 @@ def five_min_ubmi_update(): #  UBMI 지수 (코인 거래량) 체크용 5분 간
     mmp.five_min_ubmi_update()
 
 
-@scheduler.task('cron', id='daily_report', coalesce=False, max_instances=1,  hour='19-21', second='*/20', misfire_grace_time=1)
+@scheduler.task('cron', id='daily_report', coalesce=False, max_instances=1,  hour='19-21', second='*/20', second=0, misfire_grace_time=1)
 def daily_report():
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
@@ -230,7 +230,7 @@ def daily_report():
         print(f"Error: {e}")
     comnQueryCls(curs, conn)
 
-@scheduler.task('cron', id='daily_report_chk', coalesce=False, max_instances=1, hour='5-18', minute='*/20', misfire_grace_time=1)
+@scheduler.task('cron', id='daily_report_chk', coalesce=False, max_instances=1, hour='5-18', minute='*/20', second=0, misfire_grace_time=1)
 def daily_report_chk():
     conn, curs = comnQueryStrt()
     try: 
