@@ -148,29 +148,29 @@ def case1_check(trade_factors, case1_chk):
         #     ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
         #         return True
         if trade_factors.iloc[-2]['signal'] < 0: # 최저점 확인 장치
-            if ((trade_factors.iloc[-2]['signal'] * 2) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
+            if ((trade_factors.iloc[-2]['signal'] * 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
                  ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
-            ) and (trade_factors.iloc[-3]['rsi_K'] < 20
-            ) and (trade_factors.iloc[-3]['rsi_D'] < 20):
+            ) and (trade_factors.iloc[-3]['rsi_K'] < 10
+            ) and (trade_factors.iloc[-3]['rsi_D'] < 10):
                 return True
         elif trade_factors.iloc[-2]['signal'] > 0: # 최저점 확인 장치
-            if ((trade_factors.iloc[-2]['signal'] * 0.01) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.6) 
+            if ((trade_factors.iloc[-2]['signal'] * 0.1) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.4) 
                  ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
-            ) and (trade_factors.iloc[-3]['rsi_K'] < 20
-            ) and (trade_factors.iloc[-3]['rsi_D'] < 20):
+            ) and (trade_factors.iloc[-3]['rsi_K'] < 10
+            ) and (trade_factors.iloc[-3]['rsi_D'] < 10):
                 return True
     return False
 
 def case2_check(trade_factors, sma200):
      # 상승세 확인 장치
     if trade_factors.iloc[-1]['signal'] < 0:
-        if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.5)
+        if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
         ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.5)
+        if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and ((sma200.iloc[-1]['sma20'] * 1.01) < sma200.iloc[-1]['sma10']
         ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90):
