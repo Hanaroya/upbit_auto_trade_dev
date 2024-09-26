@@ -147,8 +147,14 @@ def case1_check(trade_factors, case1_chk):
         #     ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
         #     ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
         #         return True
-        if trade_factors.iloc[-2]['signal'] < 0 and trade_factors.iloc[-2]['macd'] < 0: # 최저점 확인 장치
-            if ((trade_factors.iloc[-2]['signal'] * 1.4) > (trade_factors.iloc[-2]['macd'] > (trade_factors.iloc[-2]['signal'] * 1.9) 
+        if trade_factors.iloc[-2]['signal'] < 0: # 최저점 확인 장치
+            if ((trade_factors.iloc[-2]['signal'] * 2) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
+                 ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
+            ) and (trade_factors.iloc[-3]['rsi_K'] < 20
+            ) and (trade_factors.iloc[-3]['rsi_D'] < 20):
+                return True
+        elif trade_factors.iloc[-2]['signal'] > 0: # 최저점 확인 장치
+            if ((trade_factors.iloc[-2]['signal'] * 0.01) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.6) 
                  ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
             ) and (trade_factors.iloc[-3]['rsi_K'] < 20
             ) and (trade_factors.iloc[-3]['rsi_D'] < 20):
