@@ -19,7 +19,7 @@ checking = ['buying', 'checking', 'cancel']
 
 def coin_receive_buying(c_rank):
     tm.trade_strt()
-    global b_flag, simulate, orderbook
+    global b_flag, simulate
     t_coin = None
     idx = 0
     # while True:
@@ -55,8 +55,8 @@ def coin_receive_buying(c_rank):
                 print(e)
                 print('\ncoin data not found\n')
                 t_coin = None
-            try: orderbook = tm.get_orderbook(t_coin['c_code'])[0] # 코인별 장표를 불러오는 프로세스
-            except: orderbook = {}
+            # try: orderbook = tm.get_orderbook(t_coin['c_code'])[0] # 코인별 장표를 불러오는 프로세스
+            # except: orderbook = {}
             case1, sma_chk = None, None
             try:
                 if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
@@ -157,23 +157,19 @@ def case1_check(trade_factors, case1_chk):
 
 def case2_check(trade_factors, sma200):
      # 상승세 확인 장치
-    if (((trade_factors.iloc[-1]['signal'] * 1.10) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2)
-            ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-    ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
-    ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']
-    ) and ((sma200.iloc[-1]['sma20'] * 1.05) < sma200.iloc[-1]['sma10']
-    ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90
-    ) and (sma_check(trade_factors=sma200) == True):
-        return True
-    # up_1 = (trade_factors.iloc[-1]['high'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
-    # low_1 = (trade_factors.iloc[-1]['low'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
-    # up_2 = (trade_factors.iloc[-2]['high'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
-    # low_2 = (trade_factors.iloc[-2]['low'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100 # 계단 형식의 상승폭을 보일때를 체크하기 위한 case 2
-    # if ((up_1 > 0.15 and low_1 > -0.5) and (up_1 > up_2) and (low_1 > low_2)
-    #     ) and ((sma200.iloc[-1]['sma20'] * 1.05) < sma200.iloc[-1]['sma10']
-    #     ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90
-    #     ) and (sma_check(trade_factors=sma200) == True):
-    #     return True 
+    if trade_factors.iloc[-1]['signal'] < 0:
+        if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.5)
+                ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
+        ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
+        ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
+            return True
+    elif trade_factors.iloc[-1]['signal'] > 0:
+        if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.5)
+                ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
+        ) and ((sma200.iloc[-1]['sma20'] * 1.05) < sma200.iloc[-1]['sma10']
+        ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90
+        ) and (sma_check(trade_factors=sma200) == True):
+            return True
     return False
         
 def sma_check(trade_factors):
@@ -192,7 +188,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     dt = datetime.datetime.now()
     mes = ''
     dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
-    global orderbook, b_flag
+    global b_flag
     change_ubmi_now = comnQuerySel(curs, conn,"SELECT change_ubmi_now FROM trading_list WHERE coin_key=1")[0]['change_ubmi_now']
     change_ubmi_before = comnQuerySel(curs, conn,"SELECT change_ubmi_before FROM trading_list WHERE coin_key=1")[0]['change_ubmi_before']
     # ubmi_digit = comnQuerySel(curs, conn,"SELECT ubmi FROM trading_list WHERE coin_key=1")[0]['ubmi']
