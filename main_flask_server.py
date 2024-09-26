@@ -345,7 +345,7 @@ def buying_process_wrapper2(*args): # 구매용 매소드 실행시키기
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
     
-@scheduler.task('cron', id='buying_process_wrapper3', coalesce=False, max_instances=1, second='*/6', args=[3], misfire_grace_time=1)        
+@scheduler.task('cron', id='buying_process_wrapper3', coalesce=False, max_instances=1, second='*/12', args=[3], misfire_grace_time=1)        
 def buying_process_wrapper3(*args): # 구매용 매소드 실행시키기
     if buying_process_lock3.acquire(blocking=False):
         try:
@@ -355,7 +355,7 @@ def buying_process_wrapper3(*args): # 구매용 매소드 실행시키기
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='buying_process_wrapper4', coalesce=False, max_instances=1, second='*/6', args=[4], misfire_grace_time=1)        
+@scheduler.task('cron', id='buying_process_wrapper4', coalesce=False, max_instances=1, second='*/20', args=[4], misfire_grace_time=1)        
 def buying_process_wrapper4(*args): # 구매용 매소드 실행시키기
     if buying_process_lock4.acquire(blocking=False):
         try:
@@ -365,7 +365,7 @@ def buying_process_wrapper4(*args): # 구매용 매소드 실행시키기
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='buying_process_wrapper5', coalesce=False, max_instances=1, second='*/6', args=[5], misfire_grace_time=1)        
+@scheduler.task('cron', id='buying_process_wrapper5', coalesce=False, max_instances=1, second='*/30', args=[5], misfire_grace_time=1)        
 def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
     if buying_process_lock5.acquire(blocking=False):
         try:
@@ -375,7 +375,7 @@ def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='selling_process_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=1)
+@scheduler.task('cron', id='selling_process_wrapper', coalesce=False, max_instances=1, second='*/3', misfire_grace_time=1)
 def selling_process_wrapper(): # 판매용 메소드 실행시키기
     if selling_process_lock.acquire(blocking=False):
         try:
