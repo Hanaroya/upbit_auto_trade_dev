@@ -206,7 +206,8 @@ def daily_report():
         st = comnQuerySel(curs, conn,"SELECT running FROM trade_rules WHERE coin_key=1")[0]['running']
         tt = comnQuerySel(curs, conn,"SELECT terminate FROM trade_rules WHERE coin_key=1")[0]['terminate']
         dt = comnQuerySel(curs, conn,"SELECT daily_report_chk FROM trade_rules WHERE coin_key=1")[0]['daily_report_chk']
-        if st == True and tt == False and dt == False:
+        coin_num = comnQuerySel(curs, conn, "SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)']
+        if st == True and tt == False and dt == False and coin_num == 0:
             mmp.daily_report()
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
