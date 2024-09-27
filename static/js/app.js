@@ -12,6 +12,7 @@ let allMainGraphData = [];
 let allRSIData = [];
 let allStochRSIData = [];
 let allMACDData = [];
+let mainChart, rsiChart, stochRsiChart, macdChart;
 
 async function toggleGraphDisplay(coinCode) {
   const graphContainer = document.getElementById('graph-container');
@@ -25,46 +26,22 @@ async function toggleGraphDisplay(coinCode) {
     const response = await fetch(`/coin_graph?coin_code=${coinCode}`);
     const data = await response.json();
 
-    allMainGraphData = data.main_data.slice(-200);
-    allRSIData = data.rsi_data.slice(-200);
-    allStochRSIData = data.stoch_rsi_data.slice(-200);
-    allMACDData = data.macd_data.slice(-200);
+    allMainGraphData = data.main_data;
+    allRSIData = data.rsi_data;
+    allStochRSIData = data.stoch_rsi_data;
+    allMACDData = data.macd_data;
 
-    drawMainGraph(allMainGraphData.slice(-20));
-    drawRSIGraph(allRSIData.slice(-20));
-    drawStochRSIGraph(allStochRSIData.slice(-20));
-    drawMACDGraph(allMACDData.slice(-20));
+    drawMainGraph(allMainGraphData);
+    drawRSIGraph(allRSIData);
+    drawStochRSIGraph(allStochRSIData);
+    drawMACDGraph(allMACDData);
 
     graphContainer.style.display = 'block';
     window.scrollTo({ top: graphContainer.offsetTop, behavior: 'smooth' });
-    
+
   } catch (error) {
     console.error('Error fetching graph data:', error);
   }
-}
-
-function updateMainGraph(value) {
-  const startIndex = parseInt(value);
-  const endIndex = startIndex + 20;
-  drawMainGraph(allMainGraphData.slice(startIndex, endIndex));
-}
-
-function updateRSIGraph(value) {
-  const startIndex = parseInt(value);
-  const endIndex = startIndex + 20;
-  drawRSIGraph(allRSIData.slice(startIndex, endIndex));
-}
-
-function updateStochRSIGraph(value) {
-  const startIndex = parseInt(value);
-  const endIndex = startIndex + 20;
-  drawStochRSIGraph(allStochRSIData.slice(startIndex, endIndex));
-}
-
-function updateMACDGraph(value) {
-  const startIndex = parseInt(value);
-  const endIndex = startIndex + 20;
-  drawMACDGraph(allMACDData.slice(startIndex, endIndex));
 }
 
 function drawMainGraph(data) {
@@ -85,16 +62,56 @@ function drawMainGraph(data) {
     chart: {
       type: 'candlestick',
       height: 350,
-      width: '70%',
+      width: '100%',
       zoom: {
-        enabled: true
+        enabled: true,
+        type: 'x',
+        autoScaleYaxis: true
+      },
+      pan: {
+        enabled: true,
+        mode: 'x',
+        threshold: 10
+      },
+      animations: {
+        enabled: false
+      },
+      toolbar: {
+        tools: {
+          pan: true,
+          reset: true
+        }
+      },
+      selection: {
+        enabled: true,
+        type: 'x'
+      },
+      events: {
+        selection: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        },
+        zoomed: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        }
       }
     },
     xaxis: {
       type: 'datetime',
       labels: {
         datetimeUTC: false
-      }
+      },
+      min: new Date(data[data.length - 30].date).getTime(),
+      max: new Date(data[data.length - 1].date).getTime()
     },
     yaxis: [{
       title: {
@@ -119,12 +136,16 @@ function drawMainGraph(data) {
       size: 0
     },
     stroke: {
-      width: [1, 1]
+      width: [2, 4]
     }
   };
 
-  const chart = new ApexCharts(document.querySelector("#main-graph"), options);
-  chart.render();
+  if (mainChart) {
+    mainChart.destroy();
+  }
+
+  mainChart = new ApexCharts(document.querySelector("#main-graph"), options);
+  mainChart.render();
 }
 
 function drawRSIGraph(data) {
@@ -139,24 +160,68 @@ function drawRSIGraph(data) {
     chart: {
       type: 'line',
       height: 225,
-      width: '70%',
+      width: '100%',
       zoom: {
-        enabled: true
+        enabled: true,
+        type: 'x',
+        autoScaleYaxis: true
+      },
+      pan: {
+        enabled: true,
+        mode: 'x',
+        threshold: 10
+      },
+      animations: {
+        enabled: false
+      },
+      toolbar: {
+        tools: {
+          pan: true,
+          reset: true
+        }
+      },
+      selection: {
+        enabled: true,
+        type: 'x'
+      },
+      events: {
+        selection: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        },
+        zoomed: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        }
       }
-    },
-    stroke: {
-      width: 1
     },
     xaxis: {
       type: 'datetime',
       labels: {
         datetimeUTC: false
-      }
+      },
+      min: new Date(data[data.length - 30].date).getTime(),
+      max: new Date(data[data.length - 1].date).getTime()
+    },
+    stroke: {
+      width: 1
     }
   };
 
-  const chart = new ApexCharts(document.querySelector("#rsi-graph"), options);
-  chart.render();
+  if (rsiChart) {
+    rsiChart.destroy();
+  }
+
+  rsiChart = new ApexCharts(document.querySelector("#rsi-graph"), options);
+  rsiChart.render();
 }
 
 function drawStochRSIGraph(data) {
@@ -177,24 +242,68 @@ function drawStochRSIGraph(data) {
     chart: {
       type: 'line',
       height: 225,
-      width: '70%',
+      width: '100%',
       zoom: {
-        enabled: true
+        enabled: true,
+        type: 'x',
+        autoScaleYaxis: true
+      },
+      pan: {
+        enabled: true,
+        mode: 'x',
+        threshold: 10
+      },
+      animations: {
+        enabled: false
+      },
+      toolbar: {
+        tools: {
+          pan: true,
+          reset: true
+        }
+      },
+      selection: {
+        enabled: true,
+        type: 'x'
+      },
+      events: {
+        selection: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        },
+        zoomed: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        }
       }
-    },
-    stroke: {
-      width: 1
     },
     xaxis: {
       type: 'datetime',
       labels: {
         datetimeUTC: false
-      }
+      },
+      min: new Date(data[data.length - 30].date).getTime(),
+      max: new Date(data[data.length - 1].date).getTime()
+    },
+    stroke: {
+      width: 1
     }
   };
 
-  const chart = new ApexCharts(document.querySelector("#stoch-rsi-graph"), options);
-  chart.render();
+  if (stochRsiChart) {
+    stochRsiChart.destroy();
+  }
+
+  stochRsiChart = new ApexCharts(document.querySelector("#stoch-rsi-graph"), options);
+  stochRsiChart.render();
 }
 
 function drawMACDGraph(data) {
@@ -215,24 +324,68 @@ function drawMACDGraph(data) {
     chart: {
       type: 'line',
       height: 225,
-      width: '70%',
+      width: '100%',
       zoom: {
-        enabled: true
+        enabled: true,
+        type: 'x',
+        autoScaleYaxis: true
+      },
+      pan: {
+        enabled: true,
+        mode: 'x',
+        threshold: 10
+      },
+      animations: {
+        enabled: false
+      },
+      toolbar: {
+        tools: {
+          pan: true,
+          reset: true
+        }
+      },
+      selection: {
+        enabled: true,
+        type: 'x'
+      },
+      events: {
+        selection: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        },
+        zoomed: function (chartContext, { xaxis }) {
+          chartContext.updateOptions({
+            xaxis: {
+              min: xaxis.min,
+              max: xaxis.max
+            }
+          });
+        }
       }
-    },
-    stroke: {
-      width: 1
     },
     xaxis: {
       type: 'datetime',
       labels: {
         datetimeUTC: false
-      }
+      },
+      min: new Date(data[data.length - 30].date).getTime(),
+      max: new Date(data[data.length - 1].date).getTime()
+    },
+    stroke: {
+      width: 1
     }
   };
 
-  const chart = new ApexCharts(document.querySelector("#macd-graph"), options);
-  chart.render();
+  if (macdChart) {
+    macdChart.destroy();
+  }
+
+  macdChart = new ApexCharts(document.querySelector("#macd-graph"), options);
+  macdChart.render();
 }
 
 function toggleMenu() {

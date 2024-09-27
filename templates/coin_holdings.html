@@ -10,12 +10,13 @@
       display: none;
       margin-top: 20px;
       width: 100%;
-      position: relative;
+      position: center;
       z-index: 1;  /* 테이블보다 뒤에 오도록 설정 */
     }
-    .graph {
+    .chart-container {
+      display: inline-block;
+      width: 70%;
       margin-bottom: 20px;
-      align-items: center;
     }
     table {
       width: 100%;
@@ -96,21 +97,13 @@
           </tbody>
         </table>
       </div>
-      <div id="graph-container" style="display: none; text-align: center;">
-        <div id="main-graph"></div>
-        <input type="range" id="main-graph-slider" min="0" max="180" step="1" value="180" oninput="updateMainGraph(this.value)">
-      
-        <div id="rsi-graph"></div>
-        <input type="range" id="rsi-graph-slider" min="0" max="180" step="1" value="180" oninput="updateRSIGraph(this.value)">
-      
-        <div id="stoch-rsi-graph"></div>
-        <input type="range" id="stoch-rsi-graph-slider" min="0" max="180" step="1" value="180" oninput="updateStochRSIGraph(this.value)">
-      
-        <div id="macd-graph"></div>
-        <input type="range" id="macd-graph-slider" min="0" max="180" step="1" value="180" oninput="updateMACDGraph(this.value)">
-      </div>
-      
-      <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+      <div id="graph-container">
+        <div class="chart-container" id="main-graph"></div>
+        <div class="chart-container" id="rsi-graph"></div>
+        <div class="chart-container" id="stoch-rsi-graph"></div>
+        <div class="chart-container" id="macd-graph"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
       <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     </div>
     
