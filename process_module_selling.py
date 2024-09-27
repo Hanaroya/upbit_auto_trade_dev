@@ -269,7 +269,11 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             op = op / 8
             # 판매 메세지 변경
             if str(t_record['position']).find('reach profit point') > -1: mes="매도 고점 도달"
-            elif str(t_record['position']).find('emergency') > -1: mes = "매도 저점 도달"
+            elif str(t_record['position']).find('emergency') > -1: 
+                if up_chk_b < 0:
+                    mes = "매도 저점 도달"
+                elif up_chk_b > 0:
+                    mes = "매도 고점 도달"
             elif user_call == True: mes = "User ask for Sell" # 사용자 신청
             else: mes = '이상 발생'
             
