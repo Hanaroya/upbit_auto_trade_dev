@@ -264,9 +264,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             # 수익 소수점 반올림
             deposit = round(t_record['deposit'] + (t_record['deposit'] * (up_chk_b/100)))
             op = round(total_am)
-            remain = op % 8
+            remain = op % 22
             op -= remain
-            op = op / 8
+            op = op / 22
             # 판매 메세지 변경
             if str(t_record['position']).find('reach profit point') > -1: mes="매도 고점 도달"
             elif str(t_record['position']).find('emergency') > -1: 

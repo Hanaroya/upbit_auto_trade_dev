@@ -203,7 +203,7 @@ def profit_control(total_am:float, deposit:float):
     dep_chk = round(deposit - dep) # 실제 평가 금액 확인 
     conn, curs = comnQueryStrt()
     sv_chk = comnQuerySel(curs, conn, "SELECT sv_am FROM deposit_holding WHERE coin_key=1")[0]['sv_am'] # sv_am 보험용 전체 금액의 12% 체크
-    remain = round(comnQuerySel(curs, conn, "SELECT or_am FROM deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88) % 8
+    remain = round(comnQuerySel(curs, conn, "SELECT or_am FROM deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88) % 22
     sv_or = round(comnQuerySel(curs, conn, "SELECT or_am FROM deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.12) + remain
     comnQueryWrk(curs, conn, "UPDATE deposit_holding SET dp_am = dp_am + {} WHERE coin_key=1".format(dep)) # 1. 거래 금액 8% 원상복귀
 

@@ -206,7 +206,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     # 여기부터 구매 알고리즘 수정 시작
     cp = float(up.price_call(t_record['c_code'])[0]['tradePrice'])
     info = None
-    am_invest = round(total_am/8)
+    am_invest = round(total_am/22)
     deposit = round((am_invest) - (am_invest * 0.0005))
     case1_chk, case2_chk = False, False
     case1_chk = case1_check(trade_factors=trade_factors, case1_chk=t_record['record']['case1_chk'])
@@ -217,8 +217,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         ) or (case2_chk == True and (t_record['hold'] == False)
         ) or (t_record['position'] in checking[1:]):
         try:
-            if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 7) and (
-                comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/8)*3))):
+            if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 19) and (
+                comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/22)*3))):
                 mes = ''
                 if b_flag == False: 
                     info = {}
