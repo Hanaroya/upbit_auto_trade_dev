@@ -217,8 +217,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         ) or (case2_chk == True and (t_record['hold'] == False)
         ) or (t_record['position'] in checking[1:]):
         try:
-            if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 19) and (
-                comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/22)*3))):
+            if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 16) and (
+                comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/22)*6))):
                 mes = ''
                 if b_flag == False: 
                     info = {}
