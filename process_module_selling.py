@@ -180,13 +180,10 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     dt = datetime.datetime.now()
     dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
     global simulate, s_flag
-    change_ubmi_now = comnQuerySel(curs, conn,"SELECT change_ubmi_now FROM trading_list WHERE coin_key=1")[0]['change_ubmi_now']
-    change_ubmi_before = comnQuerySel(curs, conn,"SELECT change_ubmi_before FROM trading_list WHERE coin_key=1")[0]['change_ubmi_before']
+    ubmi = comnQuerySel(curs, conn,"SELECT change_ubmi_now FROM trading_list WHERE coin_key=1")[0]['change_ubmi_now']
     total_profit = comnQuerySel(curs, conn,"SELECT (pr_am - (or_am * 0.12 - sv_am)) as pr_am FROM deposit_holding WHERE coin_key=1")[0]['pr_am'] # 수익금 확인
     if type(total_profit) != float or total_profit < 0: total_profit = 0
     cp = float(c_list.iloc[-1]['close'])
-
-    trade_chk = False
     up_chk_b = -0.05 # 전체 수익의 25% ~ 50%일 경우 긴급판매 발동  
     up_chk_b += ((float(cp) - t_record['price_b']) / t_record['price_b']) * 100
     info = {}
@@ -223,11 +220,13 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     # if (change_ubmi_before != None and (change_ubmi_now - change_ubmi_before) < -80 and dt.hour != 9 and change_ubmi_now < -50): # UBMI 지수가 저번 지수보다 -80 이상 갑자기 급락하고 현재 지수가 -50 이하일 경우
     #     if up_chk_b > 0.05: t_record['position'] = 'reach profit point 4 UBMI drop -80'
     #     else: t_record['position'] = 'emergency 4 UBMI drop -80'
-    
+    checker = 0.5
+    if ubmi < -50: checker = 0.05
+    elif ubmi > 50: checker = 1
     if up_chk_b < -3.95 and str(t_record['position']).find("emergency") == -1: 
         t_record['position'] = 'emergency 5 -4% check'
-    if up_chk_b > 0.5 and str(t_record['position']).find("emergency") == -1: 
-        t_record['position'] = 'emergency 6 0.5% check'
+    if up_chk_b > checker and str(t_record['position']).find("emergency") == -1: 
+        t_record['position'] = 'emergency 6 {}% check'.format(checker)
 
     info = {
         'sell_uuid': '', 

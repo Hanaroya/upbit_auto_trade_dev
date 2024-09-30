@@ -199,7 +199,7 @@ def orders_status(orderid):
 
 
 def profit_control(total_am:float, deposit:float):
-    dep = round(total_am/8) 
+    dep = round(total_am/22) 
     dep_chk = round(deposit - dep) # 실제 평가 금액 확인 
     conn, curs = comnQueryStrt()
     sv_chk = comnQuerySel(curs, conn, "SELECT sv_am FROM deposit_holding WHERE coin_key=1")[0]['sv_am'] # sv_am 보험용 전체 금액의 12% 체크
