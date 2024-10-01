@@ -276,7 +276,8 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             elif user_call == True: mes = "User ask for Sell" # 사용자 신청
             else: mes = '이상 발생'
             
-            if (user_call == 1 or str(t_record['position']).find('emergency') > -1) and t_record['r_holding'] == False:
+            if (user_call == 1 or str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1
+                ) and t_record['r_holding'] == False:
                 if case1_chk == True: t_record['record']['strategy'] = 'case 1 S ' + t_record['record']['strategy']
                 elif case2_chk == True: t_record['record']['strategy'] = 'case 2 S '+ t_record['record']['strategy']
                 elif case3_chk == True: t_record['record']['strategy'] = 'case 3 S '+ t_record['record']['strategy']
