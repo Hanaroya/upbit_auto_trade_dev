@@ -140,9 +140,9 @@ def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi): # 최�
 # 케이스2의 경우 많이 겹치는 부분이 많기 때문에 일정 퍼센트 이상 이익이 날 경우만 통과
 def case2_check(trade_factors,sma200, up_chk_b, ubmi): # 차상의 경우 혹은 몇몇 조건이 불충분한데 이익이 날 경우 
     dt = datetime.datetime.now()
-    checker = 0.5
+    checker = 0.2
     if ubmi < -50: checker = 0.05
-    elif ubmi > 50: checker = 0.8
+    elif ubmi > 50: checker = 0.5
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0 and dt.minute % 15 == 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.995) # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
