@@ -177,7 +177,7 @@ def hourly_report(): # 1시간 간격 리포트 전송
             mmp.every_1_hour()
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 @scheduler.task('cron', id='hourly_coin_list_check', coalesce=False, max_instances=1, minute='*/30', second=0, misfire_grace_time=None)
 def hourly_coin_list_check():  # 30분 간격 코인 리스트 다시 정렬 (거래 대금순)
@@ -190,7 +190,7 @@ def hourly_coin_list_check():  # 30분 간격 코인 리스트 다시 정렬 (�
             mmp.every_30_minutes()
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 @scheduler.task('cron', id='five_min_ubmi_update', coalesce=False, max_instances=1, minute='*/5', misfire_grace_time=None)
 def five_min_ubmi_update(): #  UBMI 지수 (코인 거래량) 체크용 5분 간격
@@ -211,7 +211,7 @@ def daily_report():
             mmp.daily_report()
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 @scheduler.task('cron', id='daily_report_chk', coalesce=False, max_instances=1, hour='5-18', minute='*/20', second=0, misfire_grace_time=None)
 def daily_report_chk():
@@ -222,7 +222,29 @@ def daily_report_chk():
             comnQueryWrk(curs, conn, "UPDATE trade_rules SET daily_report_chk={} WHERE coin_key=1".format(False))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)   
+    finally: comnQueryCls(curs, conn)   
+
+@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='19-23', minute='*/20', second=0, misfire_grace_time=None)
+def regular_buying_hour1():
+    conn, curs = comnQueryStrt()
+    try: 
+        dt = comnQuerySel(curs, conn,"SELECT daily_report_chk FROM trade_rules WHERE coin_key=1")[0]['daily_report_chk']
+        if dt == True:
+            comnQueryWrk(curs, conn, "UPDATE trade_rules SET daily_report_chk={} WHERE coin_key=1".format(False))
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally: comnQueryCls(curs, conn)   
+    
+@scheduler.task('cron', id='regular_buying_hour2', coalesce=False, max_instances=1, hour='0-4', minute='*/20', second=0, misfire_grace_time=None)
+def regular_buying_hour2():
+    conn, curs = comnQueryStrt()
+    try: 
+        dt = comnQuerySel(curs, conn,"SELECT b_limit FROM trade_rules WHERE coin_key=1")[0]['b_limit']
+        if dt == False:
+            comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit={} WHERE coin_key=1".format(True))
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally: comnQueryCls(curs, conn)   
     
 @scheduler.task('cron', id='buy_check', coalesce=False, max_instances=1, second="*/10", misfire_grace_time=None)
 def buy_check():
@@ -306,7 +328,7 @@ def get_real_balance():
                 comnQueryWrk(curs, conn,"UPDATE deposit_holding SET or_am={} WHERE coin_key=2".format(tm.get_balance("KRW")))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 @scheduler.task('cron', id='buying_process_wrapper1', coalesce=False, max_instances=1, second='*/4', args=[1], misfire_grace_time=None)        
 def buying_process_wrapper1(*args): # 구매용 매소드 실행시키기
@@ -352,7 +374,7 @@ def buying_process_wrapper4(*args): # 구매용 매소드 실행시키기
 def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
     if buying_process_lock5.acquire(blocking=False):
         try:
-                buying_process(*args)
+            buying_process(*args)
         finally:
             buying_process_lock5.release()
     else:
