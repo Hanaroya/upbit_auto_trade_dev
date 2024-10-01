@@ -149,7 +149,7 @@ def case2_check(trade_factors, sma200):
     elif trade_factors.iloc[-1]['signal'] > 0:
         if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-        ) and ((sma200.iloc[-1]['sma20'] * 1.01) < sma200.iloc[-1]['sma10']
+        ) and ((sma200.iloc[-1]['sma20'] * 1.01) < sma200.iloc[-1]['sma10'] or sma_check(sma_check) == True
         ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90):
             return True
     return False
