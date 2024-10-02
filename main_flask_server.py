@@ -224,7 +224,7 @@ def daily_report_chk():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='15-23', minute='*/20', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='15-23', minute='*/5', second=0, misfire_grace_time=None)
 def regular_buying_hour1():
     conn, curs = comnQueryStrt()
     try: 
@@ -235,7 +235,7 @@ def regular_buying_hour1():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
     
-@scheduler.task('cron', id='regular_buying_hour2', coalesce=False, max_instances=1, hour='0-4', minute='*/20', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='regular_buying_hour2', coalesce=False, max_instances=1, hour='0-4', minute='*/5', second=0, misfire_grace_time=None)
 def regular_buying_hour2():
     conn, curs = comnQueryStrt()
     try: 
