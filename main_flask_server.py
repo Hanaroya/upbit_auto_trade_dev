@@ -228,9 +228,9 @@ def daily_report_chk():
 def regular_buying_hour1():
     conn, curs = comnQueryStrt()
     try: 
-        dt = comnQuerySel(curs, conn,"SELECT daily_report_chk FROM trade_rules WHERE coin_key=1")[0]['daily_report_chk']
-        if dt == True:
-            comnQueryWrk(curs, conn, "UPDATE trade_rules SET daily_report_chk={} WHERE coin_key=1".format(False))
+        dt = comnQuerySel(curs, conn,"SELECT b_limit FROM trade_rules WHERE coin_key=1")[0]['b_limit']
+        if dt == False:
+            comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit={} WHERE coin_key=1".format(True))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
