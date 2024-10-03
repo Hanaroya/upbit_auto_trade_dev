@@ -22,8 +22,8 @@ def post_message(channel, text):
         assert e.response["error"]
         
 def regular_percent_message(percent:float, coin:str, channel:str):
-    if ((0 < percent % 1 < 0.1) or (0.9 < percent % 1 < 1)) and percent > 1:  post_message(channel=channel, text="{}: {}% up".format(coin, percent))
-    if ((0 < percent % 1 < 0.1) or (0.9 < percent % 1 < 1)) and percent < -1:  post_message(channel=channel, text="{}: {}% down".format(coin, percent))
+    if ((0 < percent % 1 < 0.1) or (0.9 < percent % 1 < 1)) and percent > 1:  post_message(channel=channel, text="{}: {}% up".format(coin, round(percent, 3)))
+    if ((0 < percent % 1 < 0.1) or (0.9 < percent % 1 < 1)) and percent < -1:  post_message(channel=channel, text="{}: {}% down".format(coin, round(percent, 3)))
 
 def send_mail(send_from, send_to, subject, message, files=[], server="localhost", port=587, username='', password='', use_tls=True):
     msg = MIMEMultipart()
