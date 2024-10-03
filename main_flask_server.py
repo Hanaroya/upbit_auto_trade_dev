@@ -727,6 +727,32 @@ def get_real_balance_api():
     comnQueryCls(curs, conn)
     return jsonify({"volume": info})
 
+@app.route('/cancel_buy_order', methods=['POST'])
+def cancel_buy_order():
+    data = request.json
+    coin_id = data['coin_id']
+    # 여기에 구매 주문 취소 로직을 구현하세요
+    # 예: 데이터베이스에서 해당 코인의 구매 주문을 찾아 취소
+    success = True  # 실제 구현에서는 취소 성공 여부에 따라 이 값을 설정하세요
+    
+    if success:
+        return jsonify({"result": 0})
+    else:
+        return jsonify({"result": -1})
+
+@app.route('/cancel_sell_order', methods=['POST'])
+def cancel_sell_order():
+    data = request.json
+    coin_id = data['coin_id']
+    # 여기에 판매 주문 취소 로직을 구현하세요
+    # 예: 데이터베이스에서 해당 코인의 판매 주문을 찾아 취소
+    success = True  # 실제 구현에서는 취소 성공 여부에 따라 이 값을 설정하세요
+    
+    if success:
+        return jsonify({"result": 0})
+    else:
+        return jsonify({"result": -1})
+    
 def start_backend(): # 벡엔드 시작 커맨드
     conn, curs = comnQueryStrt()
     try: 

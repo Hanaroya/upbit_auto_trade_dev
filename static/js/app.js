@@ -421,15 +421,16 @@ function toggleMenu() {
           const balance = data.volume;
 
           popupContent.innerHTML = `
-            <h3>Buy Coin</h3>
-            <p>Available Amount: $${balance}</p>
-            <input id="buy-amount" type="number" placeholder="Enter Amount"><br>
-            <input id="buy-price" type="number" placeholder="Enter Desired Price"><br>
-            <button onclick="buyUrgent(${balance}, '${coinId}')">Market Buy</button>
-            <button onclick="buyLimit('${coinId}')">Limit Buy</button>
+            <h3>코인 구매</h3>
+            <p>사용 가능 금액: $${balance}</p>
+            <input id="buy-amount" type="number" placeholder="금액 입력"><br>
+            <input id="buy-price" type="number" placeholder="희망 가격 입력"><br>
+            <button onclick="buyUrgent(${balance}, '${coinId}')">시장가 구매</button>
+            <button onclick="buyLimit('${coinId}')">지정가 구매</button>
+            <button onclick="cancelBuyOrder('${coinId}')">구매 주문 취소</button>
           `;
         })
-        .catch(error => console.error('Error fetching balance:', error));
+        .catch(error => console.error('잔액 조회 오류:', error));
     } else if (type === 'sell') {
       fetch(`/get_real_volume?coin_id=${coinId}`, {
         method: 'POST',
@@ -443,14 +444,15 @@ function toggleMenu() {
           const totalVolume = data.volume;
 
           popupContent.innerHTML = `
-            <h3>Sell Coin</h3>
-            <p>Available Volume: ${totalVolume}</p>
+            <h3>코인 판매</h3>
+            <p>사용 가능 수량: ${totalVolume}</p>
             <input id="sell-volume" type="range" min="0" max="100" value="0">
             <span id="sell-percentage">0%</span><br>
-            <input id="sell-price" type="number" placeholder="Enter Desired Price"><br>
-            <button onclick="sellUrgent(${totalVolume}, '${coinId}')">Market Sell</button>
-            <button onclick="sellLimit(${totalVolume}, '${coinId}')">Limit Sell</button><br>
-            <button onclick="endSimulation('${coinId}')">End Simulation</button>
+            <input id="sell-price" type="number" placeholder="희망 가격 입력"><br>
+            <button onclick="sellUrgent(${totalVolume}, '${coinId}')">시장가 판매</button>
+            <button onclick="sellLimit(${totalVolume}, '${coinId}')">지정가 판매</button>
+            <button onclick="cancelSellOrder('${coinId}')">판매 주문 취소</button><br>
+            <button onclick="endSimulation('${coinId}')">시뮬레이션 종료</button>
           `;
 
           const sellSlider = document.getElementById('sell-volume');
@@ -458,7 +460,7 @@ function toggleMenu() {
             document.getElementById('sell-percentage').innerText = this.value + '%';
           };
         })
-        .catch(error => console.error('Error fetching volume:', error));
+        .catch(error => console.error('수량 조회 오류:', error));
     }
   }
 
@@ -603,3 +605,33 @@ function toggleMenu() {
       tableContainer.scrollLeft = scrollLeft - walk;
     });
   });
+
+  async function cancelBuyOrder(coinId) {
+    const response = await fetch(`/cancel_buy_order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coin_id: coinId })
+    });
+    const result = await response.json();
+    if (result.result === -1) {
+      showAlert("구매 주문 취소에 실패했습니다.");
+    } else {
+      showAlert("구매 주문이 취소되었습니다.");
+    }
+    closePopup();
+  }
+
+  async function cancelSellOrder(coinId) {
+    const response = await fetch(`/cancel_sell_order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ coin_id: coinId })
+    });
+    const result = await response.json();
+    if (result.result === -1) {
+      showAlert("판매 주문 취소에 실패했습니다.");
+    } else {
+      showAlert("판매 주문이 취소되었습니다.");
+    }
+    closePopup();
+  }
