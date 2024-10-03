@@ -424,7 +424,7 @@ function toggleMenu() {
             <h3>코인 구매</h3>
             <p>사용 가능 금액: $${balance}</p>
             <input id="buy-amount" type="number" placeholder="금액 입력"><br>
-            <input id="buy-price" type="number" placeholder="희망 가격 입력"><br>
+            <input id="buy-price" type="number" placeholder="희망 가격 입력"><br><br>
             <button onclick="buyUrgent(${balance}, '${coinId}')">시장가 구매</button>
             <button onclick="buyLimit('${coinId}')">지정가 구매</button><br>
             <button onclick="cancelBuyOrder('${coinId}')">구매 주문 취소</button>
@@ -448,10 +448,10 @@ function toggleMenu() {
             <p>사용 가능 수량: ${totalVolume}</p>
             <input id="sell-volume" type="range" min="0" max="100" value="0">
             <span id="sell-percentage">0%</span><br>
-            <input id="sell-price" type="number" placeholder="희망 가격 입력"><br>
+            <input id="sell-price" type="number" placeholder="희망 가격 입력"><br><br>
             <button onclick="sellUrgent(${totalVolume}, '${coinId}')">시장가 판매</button>
-            <button onclick="sellLimit(${totalVolume}, '${coinId}')">지정가 판매</button>
-            <button onclick="cancelSellOrder('${coinId}')">판매 주문 취소</button><br>
+            <button onclick="sellLimit(${totalVolume}, '${coinId}')">지정가 판매</button><br>
+            <button onclick="cancelSellOrder('${coinId}')">판매 주문 취소</button>
             <button onclick="endSimulation('${coinId}')">시뮬레이션 종료</button>
           `;
 
