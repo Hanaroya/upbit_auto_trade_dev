@@ -169,11 +169,14 @@ sell_check_lock = threading.Lock()
 @scheduler.task('cron', id='clean_blacklist', coalesce=False, max_instances=1, second='*/15', misfire_grace_time=None)
 def clean_blacklist():
     conn, curs = comnQueryStrt()
-    now = datetime.datetime.now()
-    fifteen_minutes_ago = now - datetime.timedelta(minutes=15)
-    query = "DELETE FROM blacklist WHERE date < '{}'".format(fifteen_minutes_ago.strftime("%Y-%m-%d %H:%M:%S"))
-    comnQueryWrk(curs=curs, conn=conn, sqlText=query)
-
+    try:
+        now = datetime.datetime.now()
+        fifteen_minutes_ago = now - datetime.timedelta(minutes=15)
+        query = "DELETE FROM blacklist WHERE date < '{}'".format(fifteen_minutes_ago.strftime("%Y-%m-%d %H:%M:%S"))
+        comnQueryWrk(curs=curs, conn=conn, sqlText=query)
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally: comnQueryCls(curs, conn)
 @scheduler.task('cron', id='hourly_report', coalesce=False, max_instances=1, minute=0, second=0, misfire_grace_time=None)
 def hourly_report(): # 1시간 간격 리포트 전송 
     # if 작동중 체크, 
@@ -596,7 +599,7 @@ def simulation_sell():
             comnQueryWrk(curs, conn,"UPDATE coin_holding SET user_call=1 WHERE c_code='{}'".format(coin_id))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
     return redirect('/coin_holdings')
 
 @app.route('/sell_urgent', methods=['POST'])
@@ -618,7 +621,7 @@ def sell_urgent():
                 return jsonify({"result": -1})
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
     return redirect('/coin_holdings')
 
 @app.route('/buy_urgent', methods=['POST'])
@@ -640,7 +643,7 @@ def buy_urgent():
                 return jsonify({"result": -1})
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
     return redirect('/coin_holdings')
 
 @app.route('/sell_limit', methods=['POST'])
@@ -663,7 +666,7 @@ def sell_limit():
                 return jsonify({"result": -1})
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
     return redirect('/coin_holdings')
 
 @app.route('/buy_limit', methods=['POST'])
@@ -687,7 +690,7 @@ def buy_limit():
                 return jsonify({"result": -1})
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
     return redirect('/coin_holdings')
 
 @app.route('/get_real_volume', methods=['POST'])
@@ -706,7 +709,7 @@ def get_real_volume():
             else: info = 0
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally:comnQueryCls(curs, conn)
     return jsonify({"volume": info})
 
 @app.route('/get_real_balance', methods=['POST'])
@@ -776,7 +779,7 @@ def start_backend(): # 벡엔드 시작 커맨드
             comnQueryWrk(curs, conn,"UPDATE trade_rules SET running={} WHERE coin_key=1".format(True)) 
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 def terminate_backend(): # 벡엔드 종료 커맨드: 보유 코인 판매 완료까지 대기 
     conn, curs = comnQueryStrt()
@@ -787,7 +790,7 @@ def terminate_backend(): # 벡엔드 종료 커맨드: 보유 코인 판매 완�
             terminate_process()
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 def start_simulation_backend(): # 실거래 시뮬레이션으로 전환 커멘드
     conn, curs = comnQueryStrt()
@@ -796,7 +799,7 @@ def start_simulation_backend(): # 실거래 시뮬레이션으로 전환 커멘�
             comnQueryWrk(curs, conn,"UPDATE trade_rules SET simulate={} WHERE coin_key=1".format(True))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 def end_simulation_backend(): # 시뮬레이션 실거래 전환 커맨드
     conn, curs = comnQueryStrt()
@@ -805,7 +808,7 @@ def end_simulation_backend(): # 시뮬레이션 실거래 전환 커맨드
             comnQueryWrk(curs, conn,"UPDATE trade_rules SET simulate={} WHERE coin_key=1".format(False))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 def restrict_buying_backend(): # 구매 제한 커멘드
     conn, curs = comnQueryStrt()
@@ -814,7 +817,7 @@ def restrict_buying_backend(): # 구매 제한 커멘드
             comnQueryWrk(curs, conn,"UPDATE trade_rules SET b_limit={} WHERE coin_key=1".format(True))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
 
 def restrict_selling_backend(): # 판매 제한 커멘드
     conn, curs = comnQueryStrt()
@@ -823,7 +826,7 @@ def restrict_selling_backend(): # 판매 제한 커멘드
             comnQueryWrk(curs, conn,"UPDATE trade_rules SET s_limit={} WHERE coin_key=1".format(True))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)        
+    finally: comnQueryCls(curs, conn)        
 
 def no_restrict_buying_backend(): # 구매 제한 해제 커멘드
     conn, curs = comnQueryStrt()
@@ -832,7 +835,7 @@ def no_restrict_buying_backend(): # 구매 제한 해제 커멘드
             comnQueryWrk(curs, conn,"UPDATE trade_rules SET b_limit={} WHERE coin_key=1".format(False))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)    
+    finally: comnQueryCls(curs, conn)    
 
 def no_restrict_selling_backend(): # 판매 제한 해제 커멘드
     conn, curs = comnQueryStrt()
@@ -841,7 +844,7 @@ def no_restrict_selling_backend(): # 판매 제한 해제 커멘드
             comnQueryWrk(curs, conn,"UPDATE trade_rules SET s_limit={} WHERE coin_key=1".format(False))
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
         
 
 
