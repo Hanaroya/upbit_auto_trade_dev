@@ -235,9 +235,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     checker = 0.5
     if ubmi < -50: checker = 0.05
     elif ubmi > 50: checker = 0.8
-    if up_chk_b < -0.95 and str(t_record['position']).find("emergency") == -1: 
+    if up_chk_b < -0.95: 
         t_record['position'] = 'emergency 5 -1% check'
-    if up_chk_b > checker and str(t_record['position']).find("emergency") == -1: 
+    if up_chk_b > checker: 
         t_record['position'] = 'emergency 6 {}% check'.format(checker)
     info = {
         'sell_uuid': '', 
@@ -262,7 +262,6 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
                 elif simulate == True and t_record['r_holding'] == False: 
                     info['state'] = 'cancelled'
                     info['volume'] = 0
-                    t_record['position'] = 'holding'
         except Exception as e:
             logging.error("Exception 발생!")
             logging.error(traceback.format_exc())
@@ -294,13 +293,12 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             elif user_call == True: mes = "User ask for Sell" # 사용자 신청
             else: mes = '이상 발생'
             
-            if (user_call == 1 or str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1
-                ) and t_record['r_holding'] == False:
+            if (user_call == 1 or str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
                 if case1_chk == True: t_record['record']['strategy'] = 'case 1 S ' + t_record['record']['strategy']
                 elif case2_chk == True: t_record['record']['strategy'] = 'case 2 S '+ t_record['record']['strategy']
                 elif case3_chk == True: t_record['record']['strategy'] = 'case 3 S '+ t_record['record']['strategy']
-                elif case1_chk == False and case2_chk == False and case3_chk == False and user_call == False: t_record['record']['strategy'] = 'case E S ' + t_record['record']['strategy']
-                elif case1_chk == False and case2_chk == False and case3_chk == False and user_call == True: t_record['record']['strategy'] = 'case U S ' + t_record['record']['strategy']
+                elif user_call == False and str(t_record['position']).find('emergency') > -1: t_record['record']['strategy'] = 'case E S ' + t_record['record']['strategy']
+                elif user_call == True: t_record['record']['strategy'] = 'case U S ' + t_record['record']['strategy']
 
                 #이익금 정리
                 if str(t_record['position']).find('emergency') > -1:
