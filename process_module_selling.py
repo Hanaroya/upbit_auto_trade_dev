@@ -181,6 +181,12 @@ def sma_check(trade_factors):
         return True
     return False
 
+def add_to_blacklist(c_code, curs, conn):
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    query = "INSERT INTO blacklist (c_code, date) VALUES ('{}', {})".format(c_code, now)
+    comnQueryWrk(curs=curs, conn=conn, sqlText=query)
+
+
 def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, curs, conn): # 가지고 있는 코인 판매 가능 체크
     mes = ''
     dt = datetime.datetime.now()
@@ -275,6 +281,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             if str(t_record['position']).find('reach profit point') > -1: mes="매도 고점 도달"
             elif str(t_record['position']).find('emergency') > -1: 
                 if up_chk_b < 0:
+                    # 여기 블랙리스트 추가 {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
+                    # 15분 마다 해당 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
+                    add_to_blacklist(t_record['c_code'], curs, conn)
                     mes = "매도 저점 도달"
                 elif up_chk_b > 0:
                     mes = "매도 고점 도달"

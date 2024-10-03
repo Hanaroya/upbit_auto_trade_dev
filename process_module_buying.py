@@ -30,6 +30,10 @@ def coin_receive_buying(c_rank):
         limit_flag = comnQuerySel(curs, conn,"SELECT * FROM trade_rules WHERE coin_key=1")[0] # 각 멀티 프로세스별 제한 상태 받아오기
         coin_list = json.loads(trading_list['coin_pl'])
         
+        # 블랙리스트 호출
+        blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist")
+        blacklist_codes = [item['c_code'] for item in blacklist]
+        
         t_list = json.loads(trading_list['t_list{}'.format(c_rank)]) # 구매 테이블에 있는 코인 만 불러오기
         
         comnQueryWrk(curs, conn,"UPDATE trading_list SET t_list_chk{}={} WHERE coin_key= 1".format(c_rank,True))
@@ -49,8 +53,11 @@ def coin_receive_buying(c_rank):
         
         for i in t_list['list']:
             idx = i
-            try: 
-                t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list WHERE c_code='{}'".format(coin_list[i]))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
+            try:
+                if coin_list[i] not in blacklist_codes:
+                    t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list WHERE c_code='{}'".format(coin_list[i]))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
+                else:
+                    t_coin = None
             except Exception as e: 
                 print(e)
                 print('\ncoin data not found\n')
