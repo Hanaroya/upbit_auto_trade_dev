@@ -57,7 +57,7 @@ def coin_receive_buying(c_rank):
                 if coin_list[i] not in blacklist_codes:
                     t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list WHERE c_code='{}'".format(coin_list[i]))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
                 else:
-                    t_coin = None
+                    continue
             except Exception as e: 
                 print(e)
                 print('\ncoin data not found\n')
