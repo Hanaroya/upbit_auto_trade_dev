@@ -202,21 +202,34 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
             if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 16) and (
                 comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/22)*6))):
                 mes = ''
-                if b_flag == False: 
-                    info = {}
-                    # if simulate == False: # 시뮬레이션이 아닐때 급행 구매와 아닌 상태를 ubmi_digit으로 구분 한다. 50 이상 급매수, 50이하 일반 매수
-                    #     info = tm.trade_call_buy(coin=t_record['c_code'], amt=deposit)
-                    #     mes = '\n호가 급매수 진행 중'
-                    #     t_record['position'] = 'checking'
-                    # else: 
+                info = {}
+                if simulate == False: # 시뮬레이션이 아닐때 
+                    real_money, real_money_dp, real_money_sv = tm.real_trade_check()
+                    if (real_money / 22) > 5000:
+                        am_invest = round(real_money_dp / 22)
+                        deposit = round((am_invest) - (am_invest * 0.0005))
+                        if case1_chk == True: # 하락세 감지시
+                            info = tm.limit_call_buy(coin=t_record['c_code'], price=cp, amt=deposit)
+                            mes = '\n호가 급매수 진행 중'
+                        elif case2_chk == True: # 상승세 감지시 
+                            info = tm.trade_call_buy(coin=t_record['c_code'], amt=deposit)
+                            mes = '\n호가 급매수 진행 중'
+                        t_record['position'] = 'holding'
+                        t_record['r_holding'] = True
+                    else: # 금액 체크후 1회 구매 금액이 5000원 미만일 경우 UPBIT 결제가 안되기 때문에 변경
+                        comnQueryWrk("UPDATE trade_rules SET simulate=1 WHERE coin_key=1")
+                        info['uuid'] = "simulation"
+                        info['volume'] = 0
+                        t_record['position'] = 'holding'    
+                else: 
                     info['uuid'] = "simulation"
                     info['volume'] = 0
                     t_record['position'] = 'holding'
-                    try: t_record['price_b'] = float(info['trades'][0]['price'])
-                    except: t_record['price_b'] = cp
-                    t_record['buy_uuid'] = info['uuid']
-                    try: cp = float(info['trades'][0]['price'])
-                    except: pass
+                try: t_record['price_b'] = float(info['trades'][0]['price'])
+                except: t_record['price_b'] = cp
+                t_record['buy_uuid'] = info['uuid']
+                try: cp = float(info['trades'][0]['price'])
+                except: pass
                 t_record['volume'] = info['volume']
                 t_record['buy_uuid'] = info['uuid']
                 report = "c_code: " + t_record['c_code'] +"\nc_rank: "+str(c_rank)+"\ncurrent price: "+str(t_record['price_b'])+"\ndate_time: "+ str(dt_str) + "\nDeposit: W {}".format(t_record['deposit']) + mes
@@ -234,10 +247,11 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         if (info != None) and t_record['position'] not in checking and t_record['buy_uuid'] != '' and (
             comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling WHERE c_code='{}'".format(t_record['c_code']))[0]['COUNT(*)'] == 0):
             # 구매 완료 메세지 보내는 파트
+            # 이제 구매 완료시 체크하는 파트를 분리하여 일단 시뮬레이션이던 실거래이든 체크하는 파트에서 체크중 실거래시 구매 완료 메시지도 그쪽에서 처리. 
             if t_record['price_b'] == 0 or t_record['price_b'] == None: # 만약 price_b가 없을 경우 대비
                 t_record['price_b'] = cp
 
-            t_record['hold'] = True # 구매 완료후 설정 변경
+            t_record['hold'] = True # 구매 완료후 설정 변경 
             t_record['deposit'] = deposit
             t_record['record']['case1_chk'] = False
             if case1_chk == True: t_record['record']['strategy'] = 'case 1 B ' + t_record['record']['strategy']
@@ -247,5 +261,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
             lst={'c_code': t_record['c_code'], 'c_rank': c_rank, 'current_price': cp, 'percent': -0.05, 'date_time':dt, 
                  'c_status': 'Purchased', 'reason': mes, 'deposit':t_record['deposit']}
             comnQueryWrk(curs, conn,sqlTextBuilder(li=lst,table='trade_history'))
-            comnQueryWrk(curs, conn,"UPDATE deposit_holding SET dp_am = dp_am - {} WHERE coin_key=1".format(am_invest)) # 전체 금액의 8%만 배분, total_am은 전체 88%
+            if simulate == False:
+                comnQueryWrk(curs, conn,"UPDATE deposit_holding SET dp_am = dp_am - {} WHERE coin_key=2".format(am_invest)) # 전체 금액의 4%만 배분, total_am은 전체 88%
+            else:
+                comnQueryWrk(curs, conn,"UPDATE deposit_holding SET dp_am = dp_am - {} WHERE coin_key=1".format(am_invest))
             comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'BUY', json.dumps(t_record['record']), report,dt))

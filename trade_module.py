@@ -21,6 +21,18 @@ server_url = 'https://api.upbit.com'
 def trade_strt():
     global up
     up = upbit.Upbit(access, secret)
+    
+def real_trade_check():
+    conn, curs = comnQueryStrt()
+    real_money = get_balance("KRW")
+    try:
+        comnQueryWrk(curs, conn,"UPDATE deposit_holding SET dp_am={}, sv_am={}, or_am={} WHERE coin_key=2".format(
+            (real_money * 0.88), (real_money * 0.12), real_money)) # 현재 보유 실제 금액 업데이트 
+    except Exception as e:
+        print(e)
+    finally:
+        comnQueryCls(curs, conn)
+        return real_money, real_money * 0.88, real_money * 0.12
 
 def trade_call_buy(coin:str, amt:float): # 구매 확인 스캐쥴을 만들어 루프 제거
     global up

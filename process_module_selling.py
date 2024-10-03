@@ -250,15 +250,19 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
 
     if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1) or user_call == True:
         try:    
-            # if simulate == False and s_flag == False: # 실거래시 문제가 생겨 안전용 추가
-            #     info = tm.trade_call_sell(t_record['c_code'], t_record['volume'])
-            #     if info != None: cp = float(tm.orders_status(info['uuid'])['trades'][0]['price'])
-            #     elif info == None and trade_chk == False:
-            #         t_record['hold'] = False # 만약 업비트 앱에서 판매 했을경우 대비
-            #     elif info == None and trade_chk == True:
-            #         info = tm.orders_status(orderid=t_record['sell_uuid']) # 판매 상황 체크
-            # elif simulate == True: # 시뮬레이션 모드 
-            info['state'] = 'cancelled'
+            if s_flag == False: 
+                info = {}
+                if simulate == False and t_record['r_holding'] == True and t_record['sell_uuid'] == '': # 시뮬레이션이 아닐때 
+                    if (str(t_record['position']).find('reach profit point') > -1):
+                        info = tm.limit_call_sell(coin=t_record['c_code'], price=cp, volume=t_record['volume'])
+                    elif (str(t_record['position']).find('emergency') > -1):
+                        info = tm.trade_call_sell(coin=t_record['c_code'], volume=t_record['volume'])
+                    t_record['sell_uuid'] = info['uuid']  
+                    comnQueryWrk(curs, conn,"UPDATE coin_list_selling SET sell_uuid='{}' WHERE c_code='{}'".format(info['uuid'], t_record['c_code']))
+                elif simulate == True and t_record['r_holding'] == False: 
+                    info['state'] = 'cancelled'
+                    info['volume'] = 0
+                    t_record['position'] = 'holding'
         except Exception as e:
             logging.error("Exception 발생!")
             logging.error(traceback.format_exc())
@@ -281,7 +285,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             if str(t_record['position']).find('reach profit point') > -1: mes="매도 고점 도달"
             elif str(t_record['position']).find('emergency') > -1: 
                 if up_chk_b < 0:
-                    # 여기 블랙리스트 추가 {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
+                    # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
                     # 15분 마다 해당 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
                     add_to_blacklist(t_record['c_code'], curs, conn)
                     mes = "매도 저점 도달"
