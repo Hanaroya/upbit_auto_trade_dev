@@ -167,7 +167,8 @@ buy_check_lock = threading.Lock()
 sell_check_lock = threading.Lock()
 
 @scheduler.task('cron', id='clean_blacklist', coalesce=False, max_instances=1, second='*/15', misfire_grace_time=None)
-def clean_blacklist(curs, conn):
+def clean_blacklist():
+    conn, curs = comnQueryStrt()
     now = datetime.datetime.now()
     fifteen_minutes_ago = now - datetime.timedelta(minutes=15)
     query = "DELETE FROM blacklist WHERE date < '{}'".format(fifteen_minutes_ago.strftime("%Y-%m-%d %H:%M:%S"))
