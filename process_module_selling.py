@@ -269,7 +269,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             mp.post_message("#auto-trade", "{}: {}, {}".format(t_record['c_code'], e, info))
             comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'ERROR', '', """{}""".format(traceback.format_exc()),dt))
             info = None
-        if info != None and info['state'] != 'wait' and info['side'] == 'ask':
+        if info != None:
             try: cp = float(info['trades'][0]['price'])
             except: cp = c_list.iloc[-1]['close']
             # if ((info != None or simulate == True) and t_record['position'] == 'holding') or t_record['sell_uuid'] == 'canceled':

@@ -724,16 +724,24 @@ def get_real_balance_api():
             else: info = 0
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
-    comnQueryCls(curs, conn)
+    finally: comnQueryCls(curs, conn)
     return jsonify({"volume": info})
 
 @app.route('/cancel_buy_order', methods=['POST'])
 def cancel_buy_order():
     data = request.json
     coin_id = data['coin_id']
-    # 여기에 구매 주문 취소 로직을 구현하세요
-    # 예: 데이터베이스에서 해당 코인의 구매 주문을 찾아 취소
-    success = True  # 실제 구현에서는 취소 성공 여부에 따라 이 값을 설정하세요
+    conn, curs = comnQueryStrt()
+    success = False
+    try:
+        chk = comnQuerySel(conn=conn, curs=curs, sqlText="SELECT r_holding, buy_uuid FROM coin_list_selling WHERE c_code='{}'".format(coin_id))
+        if chk[0]['r_holding'] == True and chk[0]['buy_uuid'] != '':
+            tm.cancel_order_uuid(uuid=chk[0]['buy_uuid'])
+            success = True
+        # 데이터베이스에서 해당 코인의 구매 주문을 찾아 취소    
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally: comnQueryCls(curs, conn)
     
     if success:
         return jsonify({"result": 0})
@@ -744,9 +752,17 @@ def cancel_buy_order():
 def cancel_sell_order():
     data = request.json
     coin_id = data['coin_id']
-    # 여기에 판매 주문 취소 로직을 구현하세요
-    # 예: 데이터베이스에서 해당 코인의 판매 주문을 찾아 취소
-    success = True  # 실제 구현에서는 취소 성공 여부에 따라 이 값을 설정하세요
+    conn, curs = comnQueryStrt()
+    success = False
+    try:
+        chk = comnQuerySel(conn=conn, curs=curs, sqlText="SELECT r_holding, sell_uuid FROM coin_list_selling WHERE c_code='{}'".format(coin_id))
+        if chk[0]['r_holding'] == True and chk[0]['sell_uuid'] != '':
+            tm.cancel_order_uuid(uuid=chk[0]['sell_uuid'])
+            success = True
+        # 데이터베이스에서 해당 코인의 구매 주문을 찾아 취소    
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally: comnQueryCls(curs, conn)
     
     if success:
         return jsonify({"result": 0})

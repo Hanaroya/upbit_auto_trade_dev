@@ -426,7 +426,7 @@ function toggleMenu() {
             <input id="buy-amount" type="number" placeholder="금액 입력"><br>
             <input id="buy-price" type="number" placeholder="희망 가격 입력"><br>
             <button onclick="buyUrgent(${balance}, '${coinId}')">시장가 구매</button>
-            <button onclick="buyLimit('${coinId}')">지정가 구매</button>
+            <button onclick="buyLimit('${coinId}')">지정가 구매</button><br>
             <button onclick="cancelBuyOrder('${coinId}')">구매 주문 취소</button>
           `;
         })
