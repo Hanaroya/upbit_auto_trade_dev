@@ -179,6 +179,7 @@ def clean_blacklist():
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)
+    
 @scheduler.task('cron', id='hourly_report', coalesce=False, max_instances=1, minute=0, second=0, misfire_grace_time=None)
 def hourly_report(): # 1시간 간격 리포트 전송 
     # if 작동중 체크, 
@@ -237,7 +238,7 @@ def daily_report_chk():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='15-23', minute='*/5', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='17-23', minute='*/5', second=0, misfire_grace_time=None)
 def regular_buying_hour1():
     conn, curs = comnQueryStrt()
     try: 
