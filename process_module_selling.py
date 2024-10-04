@@ -123,11 +123,12 @@ def coin_receive_selling():
     finally: 
         comnQueryCls(curs, conn)
         # continue
-def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi): # 최상의 경우를 염두하고 작성한 케이스 1
+def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi, ubmi_before): # 최상의 경우를 염두하고 작성한 케이스 1
     dt = datetime.datetime.now()
     checker = 0.1
     if ubmi < -50: checker = 0.05
     elif ubmi > 50: checker = 0.5
+    elif ubmi - ubmi_before < 0: checker = 0.05
     if case1_chk == True and up_chk_b > checker and rsi_S == 'go' and dt.minute % 15 == 0:
         if trade_factors.iloc[-1]['signal'] > 0:
             if ((trade_factors.iloc[-1]['signal'] * 1.04) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 3.5
@@ -138,11 +139,12 @@ def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi): # 최�
     return False
 
 # 케이스2의 경우 많이 겹치는 부분이 많기 때문에 일정 퍼센트 이상 이익이 날 경우만 통과
-def case2_check(trade_factors,sma200, up_chk_b, ubmi): # 차상의 경우 혹은 몇몇 조건이 불충분한데 이익이 날 경우 
+def case2_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차상의 경우 혹은 몇몇 조건이 불충분한데 이익이 날 경우 
     dt = datetime.datetime.now()
     checker = 0.1
     if ubmi < -50: checker = 0.05
     elif ubmi > 50: checker = 0.5
+    elif ubmi - ubmi_before < 0: checker = 0.05
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0 and dt.minute % 15 == 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.995) # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
@@ -192,7 +194,8 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     dt = datetime.datetime.now()
     dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
     global simulate, s_flag
-    ubmi = comnQuerySel(curs, conn,"SELECT change_ubmi_now FROM trading_list WHERE coin_key=1")[0]['change_ubmi_now']
+    ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
+    ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
     total_profit = comnQuerySel(curs, conn,"SELECT (pr_am - (or_am * 0.12 - sv_am)) as pr_am FROM deposit_holding WHERE coin_key=1")[0]['pr_am'] # 수익금 확인
     if type(total_profit) != float or total_profit < 0: total_profit = 0
     cp = float(c_list.iloc[-1]['close'])
@@ -205,9 +208,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     # 만약 UBMI 지수가 -10 이하일 경우 limit_sell 를 써서 해당 가격에 판매 요청을 한다, 
     # 포지션이 selling 일 경우 오더 채크로 해당 주문이 완료 되었는지 확인한다. 
     case1_chk, case2_chk, case3_chk = False, False, False
-    if (case1_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, case1_chk=t_record['record']['case1_chk'], up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True and case2_chk == False and case3_chk == False)): 
+    if (case1_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, case1_chk=t_record['record']['case1_chk'], up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True and case2_chk == False and case3_chk == False)): 
         case1_chk, t_record['position'] = True, 'reach profit point case 1'
-    if (case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, up_chk_b=up_chk_b) == True and (t_record['hold'] == True and case1_chk == False and case3_chk == False)):
+    if (case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and (t_record['hold'] == True and case1_chk == False and case3_chk == False)):
         case2_chk, t_record['position'] = True, 'reach profit point case 2'
     if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True and case2_chk == False and case1_chk == False)):
         if up_chk_b > 0.05: 
@@ -235,9 +238,11 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     checker = 0.5
     if ubmi < -50: checker = 0.05
     elif ubmi > 50: checker = 0.8
-    if up_chk_b < -0.95: 
+    elif ubmi - ubmi_before < 0: checker = 0.05
+    
+    if up_chk_b < -0.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 5 -1% check'
-    if up_chk_b > checker: 
+    if up_chk_b > checker and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 6 {}% check'.format(checker)
     info = {
         'sell_uuid': '', 

@@ -127,10 +127,11 @@ def coin_receive_buying(c_rank):
     finally:
         comnQueryCls(curs, conn)
 
-def case1_check(trade_factors, ubmi):
+def case1_check(trade_factors, ubmi, ubmi_before):
     checker = 15
     if ubmi < -50: checker = 5
     elif ubmi >50: checker = 25
+    elif ubmi - ubmi_before < 0: checker = 5
     if trade_factors.iloc[-2]['signal'] < 0: # 최저점 확인 장치
         if ((trade_factors.iloc[-2]['signal'] * 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
                 ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
@@ -145,15 +146,15 @@ def case1_check(trade_factors, ubmi):
             return True
     return False
 
-def case2_check(trade_factors, sma200, ubmi):
+def case2_check(trade_factors, sma200, ubmi, ubmi_before):
      # 상승세 확인 장치
-    if trade_factors.iloc[-1]['signal'] < 0 and ubmi > 50:
+    if trade_factors.iloc[-1]['signal'] < 0 and (ubmi > 50 and ubmi > ubmi_before):
         if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
         ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
             return True
-    elif trade_factors.iloc[-1]['signal'] > 0 and ubmi > 50:
+    elif trade_factors.iloc[-1]['signal'] > 0 and (ubmi > 50 and ubmi > ubmi_before):
         if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and ((sma200.iloc[-1]['sma20'] * 1.01) < sma200.iloc[-1]['sma10'] or sma_check(sma200) == True
@@ -178,7 +179,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     mes = ''
     dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
     global b_flag
-    ubmi = comnQuerySel(curs, conn,"SELECT change_ubmi_now FROM trading_list WHERE coin_key=1")[0]['change_ubmi_now']
+    ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
+    ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
     # ubmi_digit = comnQuerySel(curs, conn,"SELECT ubmi FROM trading_list WHERE coin_key=1")[0]['ubmi']
     # orderbook으로 구매 판매 조절 
     # Ask = 매도 호가 (판매 예약이 걸려있는 금액) 
@@ -192,8 +194,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     am_invest = round(total_am/22)
     deposit = round((am_invest) - (am_invest * 0.0005))
     case1_chk, case2_chk = False, False
-    case1_chk = case1_check(trade_factors=trade_factors, ubmi=ubmi)
-    case2_chk = case2_check(trade_factors=trade_factors, sma200=sma200)
+    case1_chk = case1_check(trade_factors=trade_factors, ubmi=ubmi, ubmi_before=ubmi_before)
+    case2_chk = case2_check(trade_factors=trade_factors, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before)
     
     if (case1_chk == True and (t_record['hold'] == False)
         ) or (case2_chk == True and (t_record['hold'] == False)
