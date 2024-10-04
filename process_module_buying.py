@@ -145,15 +145,15 @@ def case1_check(trade_factors, ubmi):
             return True
     return False
 
-def case2_check(trade_factors, sma200):
+def case2_check(trade_factors, sma200, ubmi):
      # 상승세 확인 장치
-    if trade_factors.iloc[-1]['signal'] < 0:
+    if trade_factors.iloc[-1]['signal'] < 0 and ubmi > 50:
         if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
         ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
             return True
-    elif trade_factors.iloc[-1]['signal'] > 0:
+    elif trade_factors.iloc[-1]['signal'] > 0 and ubmi > 50:
         if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and ((sma200.iloc[-1]['sma20'] * 1.01) < sma200.iloc[-1]['sma10'] or sma_check(sma200) == True

@@ -125,9 +125,9 @@ def coin_receive_selling():
         # continue
 def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi): # 최상의 경우를 염두하고 작성한 케이스 1
     dt = datetime.datetime.now()
-    checker = 0.5
+    checker = 0.1
     if ubmi < -50: checker = 0.05
-    elif ubmi > 50: checker = 0.8
+    elif ubmi > 50: checker = 0.5
     if case1_chk == True and up_chk_b > checker and rsi_S == 'go' and dt.minute % 15 == 0:
         if trade_factors.iloc[-1]['signal'] > 0:
             if ((trade_factors.iloc[-1]['signal'] * 1.04) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 3.5
@@ -140,7 +140,7 @@ def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi): # 최�
 # 케이스2의 경우 많이 겹치는 부분이 많기 때문에 일정 퍼센트 이상 이익이 날 경우만 통과
 def case2_check(trade_factors,sma200, up_chk_b, ubmi): # 차상의 경우 혹은 몇몇 조건이 불충분한데 이익이 날 경우 
     dt = datetime.datetime.now()
-    checker = 0.2
+    checker = 0.1
     if ubmi < -50: checker = 0.05
     elif ubmi > 50: checker = 0.5
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0 and dt.minute % 15 == 0:
@@ -181,9 +181,9 @@ def sma_check(trade_factors):
         return True
     return False
 
-def add_to_blacklist(c_code, curs, conn):
+def add_to_blacklist(c_code, timeout, curs, conn):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    query = "INSERT INTO blacklist (c_code, date) VALUES ('{}', '{}')".format(c_code, now)
+    query = "INSERT INTO blacklist (c_code, date, timeout) VALUES ('{}', '{}', {})".format(c_code, now, timeout)
     comnQueryWrk(curs=curs, conn=conn, sqlText=query)
 
 
@@ -212,7 +212,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True and case2_chk == False and case1_chk == False)):
         if up_chk_b > 0.05: 
             t_record['position'] = 'reach profit point case 3'
-        elif up_chk_b < -0.5: 
+        elif up_chk_b < -0.75: 
             t_record['position'] = 'emergency case 3'
         case3_chk = True
     if t_record['r_holding'] == 0 and simulate == False: 'emergency real coin sold'
@@ -224,7 +224,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     if c_list.iloc[-1]['signal'] < 0:
         if (c_list.iloc[-1]['macd'] <= (c_list.iloc[-1]['signal'] * 1.05)
             ) and (t_record['hold'] == True
-            ) and (up_chk_b < -0.7): 
+            ) and (up_chk_b < -0.75): 
             t_record['position'] = 'emergency 2 -0.7% check'
     if sma200.iloc[-1]['sma10'] < sma200.iloc[-1]['sma20'] and sma_check(trade_factors=sma200) == False and (up_chk_b < -2.95): 
         t_record['position'] = 'emergency 3 sudden drop' # 갑작스럽게 내릴 경우 1
@@ -285,10 +285,13 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
             elif str(t_record['position']).find('emergency') > -1: 
                 if up_chk_b < 0:
                     # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
-                    # 15분 마다 해당 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
-                    add_to_blacklist(t_record['c_code'], curs, conn)
+                    # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
+                    add_to_blacklist(t_record['c_code'], 15, curs, conn)
                     mes = "매도 저점 도달"
                 elif up_chk_b > 0:
+                    # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
+                    # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 2분 지나면 블랙리스트에서 삭제하는 코드 생성
+                    add_to_blacklist(t_record['c_code'], 2, curs, conn)
                     mes = "매도 고점 도달"
             elif user_call == True: mes = "User ask for Sell" # 사용자 신청
             else: mes = '이상 발생'
