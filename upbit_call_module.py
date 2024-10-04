@@ -27,7 +27,7 @@ user_agent = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebK
 def ubmi_call():
     url = 'https://ubcindex.com/home'
     options = webdriver.ChromeOptions()
-    options.add_argument("headless")
+    options.add_argument("--headless=new")
     options.add_argument("log-level=3")
 
     try:
