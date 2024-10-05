@@ -143,7 +143,7 @@ def case1_check(trade_factors, ubmi, ubmi_before):
         ) and (trade_factors.iloc[-3]['rsi_D'] < checker):
             return True
     elif trade_factors.iloc[-2]['signal'] > 0: # 최저점 확인 장치
-        if ((trade_factors.iloc[-2]['signal'] / 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] / 4) 
+        if ((trade_factors.iloc[-2]['signal'] / 4) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] / 1.7) 
                 ) and (trade_factors.iloc[-3]['macd'] > (trade_factors.iloc[-2]['macd'] * 1.05))
         ) and (trade_factors.iloc[-3]['rsi_K'] < checker
         ) and (trade_factors.iloc[-3]['rsi_D'] < checker):
