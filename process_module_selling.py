@@ -125,9 +125,9 @@ def coin_receive_selling():
         # continue
 def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi, ubmi_before): # 최상의 경우를 염두하고 작성한 케이스 1
     dt = datetime.datetime.now()
-    checker = 0.1
-    if ubmi < -50: checker = 0.05
-    elif ubmi > 50: checker = 0.5
+    checker = 0.5
+    if ubmi < -50: checker = 0.5
+    elif ubmi > 50: checker = 1.5
     elif ubmi - ubmi_before < 0: checker = 0.05
     if case1_chk == True and up_chk_b > checker and rsi_S == 'go' and dt.minute % 15 == 0:
         if trade_factors.iloc[-1]['signal'] > 0:
@@ -240,9 +240,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     elif ubmi > 50: checker = 0.8
     elif ubmi - ubmi_before < 0: checker = 0.05
     
-    if up_chk_b < -0.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
+    if up_chk_b < -0.95 and ubmi < ubmi_before and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 5 -1% check'
-    if up_chk_b > checker and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
+    if up_chk_b > checker and ubmi < ubmi_before and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 6 {}% check'.format(checker)
     info = {
         'sell_uuid': '', 
