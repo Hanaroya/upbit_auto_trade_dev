@@ -64,9 +64,11 @@ def coin_receive_buying(c_rank):
                 t_coin = None
             # try: orderbook = tm.get_orderbook(t_coin['c_code'])[0] # 코인별 장표를 불러오는 프로세스
             # except: orderbook = {}
+            chk1, chk2 = 0, 0
             try:
                 if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
                     t_coin['record'] = json.loads(t_coin['record'])
+                    chk1, chk2 = t_coin['record']['case1_chk'], t_coin['record']['case2_chk']
             except Exception as e:
                 logging.error("Unknown error 발생!")
                 logging.error("Coin Code: {}".format(coin_list[i]))
@@ -84,6 +86,8 @@ def coin_receive_buying(c_rank):
                         'MACD_Signal': round(trade_factors.iloc[-1]['signal'], 7),
                         'rsi_K': round(trade_factors.iloc[-1]['rsi_K'], 2),
                         'rsi_D': round(trade_factors.iloc[-1]['rsi_D'], 2),
+                        'case1_chk': chk1,
+                        'case2_chk': chk2,
                     }
                 
                 if t_coin['hold'] == False: 
@@ -139,8 +143,8 @@ def case1_check(trade_factors, ubmi, ubmi_before):
         ) and (trade_factors.iloc[-3]['rsi_D'] < checker):
             return True
     elif trade_factors.iloc[-2]['signal'] > 0: # 최저점 확인 장치
-        if ((trade_factors.iloc[-2]['signal'] * 0.1) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.4) 
-                ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
+        if ((trade_factors.iloc[-2]['signal'] / 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] / 4) 
+                ) and (trade_factors.iloc[-3]['macd'] > (trade_factors.iloc[-2]['macd'] * 1.05))
         ) and (trade_factors.iloc[-3]['rsi_K'] < checker
         ) and (trade_factors.iloc[-3]['rsi_D'] < checker):
             return True
@@ -148,20 +152,25 @@ def case1_check(trade_factors, ubmi, ubmi_before):
 
 def case2_check(trade_factors, sma200, ubmi, ubmi_before):
      # 상승세 확인 장치
-    if trade_factors.iloc[-1]['signal'] < 0 and (ubmi > ubmi_before):
-        if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7)
+    if trade_factors.iloc[-1]['signal'] < 0 and (ubmi > ubmi_before and ubmi > 50):
+        if (((trade_factors.iloc[-1]['signal'] * 0.97) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
         ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
             return True
-    elif trade_factors.iloc[-1]['signal'] > 0 and (ubmi > ubmi_before):
-        if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3)
+    elif trade_factors.iloc[-1]['signal'] > 0 and (ubmi > ubmi_before and ubmi > 50):
+        if (((trade_factors.iloc[-1]['signal'] * 1.03) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and ((sma200.iloc[-1]['sma20'] * 1.01) < sma200.iloc[-1]['sma10'] or sma_check(sma200) == True
         ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 90):
             return True
     return False
-        
+
+def calculate_up_chk(cp, chk_value):
+    if chk_value <= 0:
+        return 0
+    return -0.05 + ((float(cp) - chk_value) / chk_value) * 100
+
 def sma_check(trade_factors):
     ema20 = trade_factors.iloc[-1]['sma20']
     ema50 = trade_factors.iloc[-1]['sma50']
@@ -193,13 +202,33 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     info = None
     am_invest = round(total_am/22)
     deposit = round((am_invest) - (am_invest * 0.0005))
-    case1_chk, case2_chk = False, False
-    case1_chk = case1_check(trade_factors=trade_factors, ubmi=ubmi, ubmi_before=ubmi_before)
-    case2_chk = case2_check(trade_factors=trade_factors, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before)
-    
-    if (case1_chk == True and (t_record['hold'] == False)
-        ) or (case2_chk == True and (t_record['hold'] == False)
-        ) or (t_record['position'] in checking[1:]):
+    # 초기화
+    case1_chk = case2_chk = False
+
+    if t_record['record']['case1_chk'] == 0:
+        case1_chk = case1_check(trade_factors=trade_factors, ubmi=ubmi, ubmi_before=ubmi_before)
+
+    if t_record['record']['case2_chk'] == 0:
+        case2_chk = case2_check(trade_factors=trade_factors, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before)
+
+    if case1_chk:
+        t_record['record']['case1_chk'] = cp
+    if case2_chk:
+        t_record['record']['case2_chk'] = cp
+
+    up_chk_b_case1 = calculate_up_chk(cp, t_record['record']['case1_chk'])
+    up_chk_b_case2 = calculate_up_chk(cp, t_record['record']['case2_chk'])
+
+    if up_chk_b_case1 < -0.05:
+        t_record['record']['case2_chk'] = 0
+    if up_chk_b_case2 < -0.05:
+        t_record['record']['case2_chk'] = 0
+
+    condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp > t_record['record']['case1_chk']
+    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case2_chk']
+    condition3 = t_record['position'] in checking[1:]
+
+    if condition1 or condition2 or condition3:
         try:
             if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 16) and (
                 comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/22)*6))):
@@ -268,3 +297,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
             else:
                 comnQueryWrk(curs, conn,"UPDATE deposit_holding SET dp_am = dp_am - {} WHERE coin_key=1".format(am_invest))
             comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'BUY', json.dumps(t_record['record']), report,dt))
+
+def calculate_up_chk(cp, chk_value):
+    if chk_value <= 0:
+        return 0
+    return -0.05 + ((float(cp) - chk_value) / chk_value) * 100
