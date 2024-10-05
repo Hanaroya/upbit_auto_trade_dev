@@ -119,7 +119,7 @@ def buying_process(rank):
         comnQueryWrk(curs, conn,"UPDATE trading_list SET t_list_chk{}={} WHERE coin_key=1".format(rank,False))
         comnQueryCls(curs, conn)
 
-def selling_process():
+def selling_process_regular():
     # if 판매 제한 체크, 작동중 체크, 
     conn, curs = comnQueryStrt()
     sell_list_chk = "sell_list_chk"
@@ -130,7 +130,25 @@ def selling_process():
         run_chk = comnQuerySel(curs, conn,"SELECT {} FROM trading_list WHERE coin_key=1".format(sell_list_chk))[0]['{}'.format(sell_list_chk)]
         if st == True and ls == False and tt == False and run_chk == False:
             comnQueryWrk(curs, conn,"UPDATE trading_list SET sell_list_chk={} WHERE coin_key=1".format(True))
-            ms.coin_receive_selling()
+            ms.coin_receive_regular_selling()
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally:
+        comnQueryWrk(curs, conn,"UPDATE trading_list SET sell_list_chk={} WHERE coin_key=1".format(False))
+        comnQueryCls(curs, conn) 
+
+def selling_process_user():
+    # if 판매 제한 체크, 작동중 체크, 
+    conn, curs = comnQueryStrt()
+    sell_list_chk = "sell_list_chk"
+    try:
+        st = comnQuerySel(curs, conn,"SELECT running FROM trade_rules WHERE coin_key=1")[0]['running']
+        tt = comnQuerySel(curs, conn,"SELECT terminate FROM trade_rules WHERE coin_key=1")[0]['terminate']
+        ls = comnQuerySel(curs, conn,"SELECT s_limit FROM trade_rules WHERE coin_key=1")[0]['s_limit']
+        run_chk = comnQuerySel(curs, conn,"SELECT {} FROM trading_list WHERE coin_key=1".format(sell_list_chk))[0]['{}'.format(sell_list_chk)]
+        if st == True and ls == False and tt == False and run_chk == False:
+            comnQueryWrk(curs, conn,"UPDATE trading_list SET sell_list_chk={} WHERE coin_key=1".format(True))
+            ms.coin_receive_user_selling()
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     finally:
@@ -396,15 +414,26 @@ def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='selling_process_wrapper', coalesce=False, max_instances=1, minute='*/5', misfire_grace_time=None)
-def selling_process_wrapper(): # 판매용 메소드 실행시키기 5분 간격
+@scheduler.task('cron', id='selling_process_wrapper1', coalesce=False, max_instances=1, minute='*/5', misfire_grace_time=None)
+def selling_process_wrapper1(): # 판매용 메소드 실행시키기 5분 간격
     if selling_process_lock.acquire(blocking=False):
         try:
-            selling_process()
+            selling_process_regular()
         finally:
             selling_process_lock.release()
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
+
+@scheduler.task('cron', id='selling_process_wrapper2', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=None)
+def selling_process_wrapper2(): # 판매용 메소드 실행시키기 5분 간격
+    if selling_process_lock.acquire(blocking=False):
+        try:
+            selling_process_user()
+        finally:
+            selling_process_lock.release()
+    else:
+        print("이전 selling_process가 아직 실행 중입니다.")
+
 
 @scheduler.task('cron', id='buy_check_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=None)
 def buy_check_wrapper(): # 실제 구매 기록이 있을시 5초마다 해당 uuid 조회

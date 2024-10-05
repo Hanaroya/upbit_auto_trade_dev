@@ -14,7 +14,7 @@ from comn import comnQueryStrt, sqlTextBuilder, comnQueryWrk, comnQuerySel, comn
 emergency_chk = 'Emergency drop'
 user_call = False
 
-def coin_receive_selling():
+def coin_receive_regular_selling():
     tm.trade_strt()
     global s_flag, simulate
     t_coin = None
@@ -123,6 +123,116 @@ def coin_receive_selling():
     finally: 
         comnQueryCls(curs, conn)
         # continue
+
+def coin_receive_user_selling():
+    tm.trade_strt()
+    global s_flag, simulate
+    t_coin = None
+    # while True:
+    try:
+        dt = datetime.datetime.now()
+        conn, curs = comnQueryStrt() # SQL 서버 접속
+        limit_flag = comnQuerySel(curs, conn,"SELECT * FROM trade_rules WHERE coin_key=1")[0] # 각 멀티 프로세스별 제한 상태 받아오기
+        # trading_list = comnQuerySel(curs, conn,"SELECT * FROM trading_list WHERE coin_key=1")[0] # 각 멀티 프로세스별 접속 코인 리스트 받아오기
+        sql_result = comnQuerySel(curs, conn,"SELECT c_code FROM coin_list_selling") # 판매 테이블에 있는 것만 따로 불러오기
+
+        if len(sql_result) == 0: # 구매 완료된 코인이 없을 경우 5초 마다 확인
+            return
+            # continue
+        
+        s_flag = limit_flag['s_limit'] # 판매 제한 확인하기
+        
+        simulate = limit_flag['simulate']
+        total_am = round(comnQuerySel(curs, conn,"SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88)
+
+        for i in sql_result:
+            try: t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(i['c_code']))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
+            except: t_coin = None
+
+            if t_coin != None:
+                trade_factors, sma200, close_base = tm.get_all_factors(t_coin['c_code'], 15)
+                strategy, case1, rsi_S = None, False, 'standby'
+                if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
+                    t_coin['record'] = json.loads(t_coin['record'])
+                    strategy = t_coin['record']['strategy']
+                    try: case1 = t_coin['record']['case1_chk']
+                    except: 
+                        case1 = False
+                    try: rsi_S = t_coin['record']['rsi_S']
+                    except: 
+                        rsi_S = 'standby'
+                try:
+                # 투자 전략 계산용 factor 받아오기
+                    if trade_factors.iloc[-1]['rsi_K'] >= 80 and trade_factors.iloc[-1]['rsi_D'] >= 80:
+                        case1 = True
+                        rsi_S = 'ready'
+                    else: 
+                        case1 = False
+                        if trade_factors.iloc[-1]['rsi_K'] < 90 and trade_factors.iloc[-1]['rsi_D'] < 80 and rsi_S == 'ready': 
+                            rsi_S = 'go'
+                except Exception as e:
+                    logging.error("Exception 발생!")
+                    logging.error(traceback.format_exc())
+                    mp.post_message("#auto-trade", "{}: {}".format(t_coin['c_code'], e))
+                    comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_coin['c_code'],'ERROR', json.dumps(t_coin['record']), """{}""".format(json.dumps(traceback.format_exc())),dt))
+                    # continue
+                    
+                #RSI 지수 업데이트 {'c_code':item, 'position': "holding", 'rsi': None, 'record':c_ticker}
+                t_coin['rsi'] = round(trade_factors.iloc[-1]['rsi'], 2)
+                t_coin['record'] = {
+                    'strategy': strategy,
+                    'close': trade_factors.iloc[-1]['close'],
+                    'MACD': round(trade_factors.iloc[-1]['macd'], 7),
+                    'MACD_Signal': round(trade_factors.iloc[-1]['signal'], 7),
+                    'rsi_K': round(trade_factors.iloc[-1]['rsi_K'], 2),
+                    'rsi_D': round(trade_factors.iloc[-1]['rsi_D'], 2),
+                    'case1_chk': case1,
+                    'rsi_S': rsi_S
+                    }
+                up_chk_b = -0.05
+                up_chk_b += ((trade_factors.iloc[-1]['close'] - t_coin['price_b']) / t_coin['price_b']) * 100
+                t_coin['percent'] = up_chk_b
+                if dt.minute % 1 == 0 and dt.second == 0:
+                    mp.regular_percent_message(channel="#auto-trade",coin=t_coin['c_code'], percent=up_chk_b)
+                user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code']))[0]['user_call']
+                if t_coin['hold'] == True and s_flag == False and str(t_coin['record']['strategy']).find('B') > -1 and user_call == 1:
+                    try: t_coin = selling_process(c_list=trade_factors,sma200=sma200,t_record=t_coin, total_am=total_am, user_call=user_call, curs=curs,conn=conn)
+                    except Exception as e:
+                        logging.error("Exception 발생!")
+                        logging.error(traceback.format_exc())
+                        mp.post_message("#auto-trade", "{}: {}".format(t_coin['c_code'], e))
+                        comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_coin['c_code'],'ERROR', json.dumps(t_coin['record']), """{}""".format(json.dumps(traceback.format_exc())),dt))
+                        # continue
+                sql_coin = t_coin
+                sql_coin['record'] = json.dumps(t_coin['record']) # 거래기록을 DB에 저장
+                
+                if sql_coin['hold'] == True and str(t_coin['record']).find('B') > -1: 
+                    comnQueryWrk(curs, conn,sqlText=sqlTextBuilder(li=sql_coin, table='coin_list_selling'))
+                    t.sleep(0.01)
+                    comnQueryWrk(curs, conn,"UPDATE coin_holding SET position='{}',rsi={}, current_price={}, current_percent={} WHERE c_code='{}'".format(
+                        sql_coin['position'],sql_coin['rsi'],trade_factors.iloc[-1]['close'],up_chk_b,t_coin['c_code']))
+                if sql_coin['hold'] == True and str(t_coin['record']).find('B') < 0 and t_coin['r_holding'] == 0: 
+                    comnQueryWrk(curs, conn,"UPDATE coin_list SET hold=0,price_b=NULL,deposit=0,position='holding',buy_uuid='' WHERE c_code='{}'".format(t_coin['c_code']))
+                    t.sleep(0.01)
+                    comnQueryWrk(curs, conn,"DELETE FROM coin_list_selling WHERE c_code='{}'".format(t_coin['c_code'])) #판매 리스트에서 제거
+                    t.sleep(0.01)
+                    comnQueryWrk(curs, conn,"DELETE FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code'])) #코인 보유 리스트에서 제거   
+            del t_coin
+
+    except KeyboardInterrupt:
+        logging.error("KeyboardInterrupt Exception 발생!")
+        logging.error(traceback.format_exc())
+        # 루프 안으로 exception check를 넣어서 문제가 5회 이상 발생시 긴급 판매 조치후 종료
+
+    except Exception as e:
+        logging.error("Exception 발생!")
+        logging.error(traceback.format_exc())
+        mp.post_message("#auto-trade", "{}: {}".format(t_coin['c_code'], e))
+        comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_coin['c_code'],'ERROR', json.dumps(t_coin['record']), """{}""".format(json.dumps(traceback.format_exc())),dt))
+    
+    finally: 
+        comnQueryCls(curs, conn)
+
 def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi, ubmi_before): # 최상의 경우를 염두하고 작성한 케이스 1
     dt = datetime.datetime.now()
     checker = 1.5

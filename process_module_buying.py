@@ -156,7 +156,8 @@ def case2_check(trade_factors, sma200, ubmi, ubmi_before):
         if (((trade_factors.iloc[-1]['signal'] * 0.97) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_K'] < trade_factors.iloc[-1]['rsi_K']
-        ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']):
+        ) and (trade_factors.iloc[-2]['rsi_D'] < trade_factors.iloc[-1]['rsi_D']
+        ) and (trade_factors.iloc[-1]['rsi_D'] < trade_factors.iloc[-1]['rsi_K'] < 85):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0 and (ubmi - ubmi_before) > 10:
         if (((trade_factors.iloc[-1]['signal'] * 1.03) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3)
