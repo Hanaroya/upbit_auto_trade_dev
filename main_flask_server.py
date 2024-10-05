@@ -853,9 +853,9 @@ def no_restrict_selling_backend(): # 판매 제한 해제 커멘드
         
 
 
-if __name__ == '__main__':
-    conn, curs = comnQueryStrt()
-    mmp.every_30_minutes()
-    comnQueryWrk(curs, conn, "UPDATE trade_rules SET 30min_update_chk=1 WHERE coin_key=1")
-    comnQueryCls(curs=curs, conn=conn)
-    app.run(host="0.0.0.0", use_reloader=False)
+# if __name__ == '__main__':
+#     conn, curs = comnQueryStrt()
+#     mmp.every_30_minutes()
+#     comnQueryWrk(curs, conn, "UPDATE trade_rules SET 30min_update_chk=1 WHERE coin_key=1")
+#     comnQueryCls(curs=curs, conn=conn)
+#     app.run(host="0.0.0.0", use_reloader=False)
