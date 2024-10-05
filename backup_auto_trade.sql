@@ -24,7 +24,8 @@ USE `coin-auto-trade`;
 DROP TABLE IF EXISTS `blacklist`;
 CREATE TABLE IF NOT EXISTS `blacklist` (
   `c_code` char(50) DEFAULT NULL,
-  `date` datetime DEFAULT NULL
+  `date` datetime DEFAULT NULL,
+  `timeout` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 테이블 데이터 coin-auto-trade.blacklist:~0 rows (대략적) 내보내기
@@ -48,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `coin_holding` (
   PRIMARY KEY (`c_code`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 coin-auto-trade.coin_holding:~14 rows (대략적) 내보내기
+-- 테이블 데이터 coin-auto-trade.coin_holding:~7 rows (대략적) 내보내기
 DELETE FROM `coin_holding`;
 
 -- 테이블 coin-auto-trade.coin_list 구조 내보내기
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `coin_list_selling` (
   PRIMARY KEY (`c_code`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC;
 
--- 테이블 데이터 coin-auto-trade.coin_list_selling:~14 rows (대략적) 내보내기
+-- 테이블 데이터 coin-auto-trade.coin_list_selling:~7 rows (대략적) 내보내기
 DELETE FROM `coin_list_selling`;
 
 -- 테이블 coin-auto-trade.deposit_holding 구조 내보내기
@@ -106,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `deposit_holding` (
 -- 테이블 데이터 coin-auto-trade.deposit_holding:~1 rows (대략적) 내보내기
 DELETE FROM `deposit_holding`;
 INSERT INTO `deposit_holding` (`coin_key`, `dp_am`, `sv_am`, `or_am`, `pr_am`) VALUES
-	(1, 880968, 120142, 1001110, 0),
+	(1, 880000, 120000, 1000000, 0),
 	(2, 0, 0, 1111.35, 0);
 
 -- 테이블 coin-auto-trade.trade_history 구조 내보내기
@@ -122,7 +123,7 @@ CREATE TABLE IF NOT EXISTS `trade_history` (
   `deposit` float DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 coin-auto-trade.trade_history:~328 rows (대략적) 내보내기
+-- 테이블 데이터 coin-auto-trade.trade_history:~443 rows (대략적) 내보내기
 DELETE FROM `trade_history`;
 
 -- 테이블 coin-auto-trade.trade_result_history 구조 내보내기
@@ -163,7 +164,7 @@ CREATE TABLE IF NOT EXISTS `trade_rules` (
 -- 테이블 데이터 coin-auto-trade.trade_rules:~1 rows (대략적) 내보내기
 DELETE FROM `trade_rules`;
 INSERT INTO `trade_rules` (`coin_key`, `b_limit`, `b_limit1`, `b_limit2`, `b_limit3`, `b_limit4`, `b_limit5`, `s_limit`, `simulate`, `terminate`, `running`, `daily_report_chk`, `30min_update_chk`, `hourly_report_chk`) VALUES
-	(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	(1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
 
 -- 테이블 coin-auto-trade.trading_list 구조 내보내기
 DROP TABLE IF EXISTS `trading_list`;
@@ -193,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `trading_list` (
 -- 테이블 데이터 coin-auto-trade.trading_list:~1 rows (대략적) 내보내기
 DELETE FROM `trading_list`;
 INSERT INTO `trading_list` (`coin_key`, `total_ubmi`, `change_ubmi_now`, `change_ubmi_before`, `fear_greed`, `coin_pl`, `t_list1`, `t_list_chk1`, `t_list2`, `t_list_chk2`, `t_list3`, `t_list_chk3`, `t_list4`, `t_list_chk4`, `t_list5`, `t_list_chk5`, `sell_list_chk`, `buy_chk`, `sell_chk`) VALUES
-	(1, 12105, -44.53, -65.38, 44.91, '["KRW-GRS", "KRW-APT", "KRW-SXP", "KRW-XEC", "KRW-STX", "KRW-TON", "KRW-ETC", "KRW-SUI", "KRW-USDT", "KRW-USDC", "KRW-PUNDIX", "KRW-DKA", "KRW-BTT", "KRW-BTG", "KRW-THETA", "KRW-TRX", "KRW-MANA", "KRW-BTC", "KRW-BSV", "KRW-PENDLE", "KRW-SC", "KRW-BAT", "KRW-SNT", "KRW-WAXP", "KRW-JST", "KRW-IOST", "KRW-QKC", "KRW-CHZ", "KRW-ETH", "KRW-GRT", "KRW-POL", "KRW-STPT", "KRW-STEEM", "KRW-LSK", "KRW-HUNT", "KRW-BCH", "KRW-AHT", "KRW-MASK", "KRW-EGLD", "KRW-T", "KRW-DOT", "KRW-TFUEL", "KRW-MOC", "KRW-EOS", "KRW-CTC", "KRW-META", "KRW-MVL", "KRW-ALGO", "KRW-STG", "KRW-VET", "KRW-KNC", "KRW-G", "KRW-MLK", "KRW-ELF", "KRW-ICX", "KRW-TT", "KRW-ARB", "KRW-SAND", "KRW-POLYX", "KRW-AUCTION", "KRW-LINK", "KRW-ONT", "KRW-GAME2", "KRW-ENS", "KRW-STRAX", "KRW-XEM", "KRW-AXS", "KRW-NEO", "KRW-PYTH", "KRW-BORA", "KRW-STRIKE", "KRW-ASTR", "KRW-MBL", "KRW-ARDR", "KRW-HBAR", "KRW-XLM", "KRW-DOGE", "KRW-CRO", "KRW-MTL", "KRW-1INCH", "KRW-BIGTIME", "KRW-GMT", "KRW-AAVE", "KRW-MNT", "KRW-ZIL", "KRW-MED", "KRW-POWR", "KRW-STMX", "KRW-XTZ", "KRW-ONG", "KRW-GLM", "KRW-AKT", "KRW-ID", "KRW-GAS", "KRW-ADA", "KRW-SHIB", "KRW-FLOW", "KRW-HIVE", "KRW-BLAST", "KRW-CBK", "KRW-AQT", "KRW-FCT2", "KRW-STORJ", "KRW-IOTA", "KRW-ATH", "KRW-ANKR", "KRW-ATOM", "KRW-HIFI", "KRW-SOL", "KRW-SBD", "KRW-HPO", "KRW-IMX", "KRW-KAVA", "KRW-QTUM", "KRW-LOOM", "KRW-CKB", "KRW-NEAR", "KRW-AVAX", "KRW-JUP", "KRW-UXLINK", "KRW-ARK", "KRW-ORBS", "KRW-W", "KRW-ONDO", "KRW-IQ", "KRW-ZETA", "KRW-XRP", "KRW-ZRX", "KRW-SEI", "KRW-ZRO", "KRW-AERGO", "KRW-BLUR", "KRW-WAVES", "KRW-CELO", "KRW-UPP", "KRW-MINA", "KRW-TAIKO", "KRW-CVC", "KRW-BEAM"]', '{"list": [126, 122, 17, 7, 128, 95, 119, 8, 108, 4, 3, 28]}', 0, '{"list": [137, 121, 76, 115, 2, 116, 138, 125, 131, 1, 123, 80]}', 0, '{"list": [120, 133, 37, 129, 12, 68, 6, 64, 136, 42, 19, 41]}', 0, '{"list": [18, 132, 0, 112, 135, 94, 67, 82, 73, 117, 98, 30]}', 0, '{"list": [35, 101, 104, 81, 15, 56, 87, 90, 63, 58, 23, 114]}', 0, 0, 0, 0);
+	(1, 12446.8, -7.71, -13.24, 49.53, '["KRW-BORA", "KRW-CELO", "KRW-ORBS", "KRW-GRS", "KRW-DKA", "KRW-MBL", "KRW-MLK", "KRW-T", "KRW-W", "KRW-HIFI", "KRW-SC", "KRW-ICX", "KRW-CBK", "KRW-WAXP", "KRW-UPP", "KRW-LINK", "KRW-PYTH", "KRW-AHT", "KRW-GMT", "KRW-BLUR", "KRW-MTL", "KRW-META", "KRW-CVC", "KRW-XEM", "KRW-XTZ", "KRW-GAME2", "KRW-KNC", "KRW-STRAX", "KRW-BTT", "KRW-HPO", "KRW-TON", "KRW-STPT", "KRW-FLOW", "KRW-SBD", "KRW-MNT", "KRW-MED", "KRW-ZETA", "KRW-CHZ", "KRW-GAS", "KRW-STRIKE", "KRW-FCT2", "KRW-POWR", "KRW-THETA", "KRW-STG", "KRW-ATOM", "KRW-BLAST", "KRW-TT", "KRW-USDC", "KRW-STORJ", "KRW-IOST", "KRW-DOGE", "KRW-ELF", "KRW-BTC", "KRW-HUNT", "KRW-ONDO", "KRW-ETH", "KRW-AQT", "KRW-XLM", "KRW-USDT", "KRW-MVL", "KRW-ONT", "KRW-MOC", "KRW-STEEM", "KRW-ID", "KRW-ZIL", "KRW-WAVES", "KRW-QKC", "KRW-GLM", "KRW-SNT", "KRW-MANA", "KRW-ALGO", "KRW-BAT", "KRW-XRP", "KRW-PUNDIX", "KRW-MINA", "KRW-PENDLE", "KRW-STMX", "KRW-QTUM", "KRW-ASTR", "KRW-ONG", "KRW-SOL", "KRW-ADA", "KRW-SAND", "KRW-NEO", "KRW-AUCTION", "KRW-ANKR", "KRW-SHIB", "KRW-BTG", "KRW-BSV", "KRW-CKB", "KRW-IQ", "KRW-EGLD", "KRW-1INCH", "KRW-POL", "KRW-LOOM", "KRW-EOS", "KRW-LSK", "KRW-G", "KRW-POLYX", "KRW-HIVE", "KRW-VET", "KRW-NEAR", "KRW-UXLINK", "KRW-GRT", "KRW-JST", "KRW-IOTA", "KRW-BCH", "KRW-CTC", "KRW-BIGTIME", "KRW-CRO", "KRW-ETC", "KRW-AXS", "KRW-AERGO", "KRW-ENS", "KRW-DOT", "KRW-TAIKO", "KRW-TRX", "KRW-KAVA", "KRW-AAVE", "KRW-JUP", "KRW-ZRX", "KRW-AKT", "KRW-ATH", "KRW-TFUEL", "KRW-XEC", "KRW-IMX", "KRW-SUI", "KRW-ARB", "KRW-ZRO", "KRW-SEI", "KRW-AVAX", "KRW-SXP", "KRW-HBAR", "KRW-ARDR", "KRW-BEAM", "KRW-STX", "KRW-MASK", "KRW-APT", "KRW-ARK"]', '{"list": [22, 102, 8, 0, 86, 52, 72, 126, 135, 1, 138, 2]}', 0, '{"list": [3, 129, 80, 58, 55, 36, 50, 137, 10, 89, 19, 133]}', 0, '{"list": [101, 108, 6, 9, 54, 128, 67, 124, 4, 115, 134, 28]}', 0, '{"list": [37, 131, 136, 65, 110, 45, 16, 81, 18, 116, 94, 118]}', 0, '{"list": [11, 74, 130, 106, 93, 79, 127, 98, 113, 73, 122, 23]}', 0, 0, 0, 0);
 
 -- 테이블 coin-auto-trade.trading_log 구조 내보내기
 DROP TABLE IF EXISTS `trading_log`;

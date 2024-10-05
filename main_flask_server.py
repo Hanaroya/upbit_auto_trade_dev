@@ -396,8 +396,8 @@ def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='selling_process_wrapper', coalesce=False, max_instances=1, second='*/3', misfire_grace_time=None)
-def selling_process_wrapper(): # 판매용 메소드 실행시키기
+@scheduler.task('cron', id='selling_process_wrapper', coalesce=False, max_instances=1, minute='*/5', misfire_grace_time=None)
+def selling_process_wrapper(): # 판매용 메소드 실행시키기 5분 간격
     if selling_process_lock.acquire(blocking=False):
         try:
             selling_process()
