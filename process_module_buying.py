@@ -216,6 +216,14 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if case2_chk:
         t_record['record']['case2_chk'] = cp
 
+    up_chk_b_case1 = calculate_up_chk(cp, t_record['record']['case1_chk'])
+    up_chk_b_case2 = calculate_up_chk(cp, t_record['record']['case2_chk'])
+
+    if up_chk_b_case1 > 0.1:
+        t_record['record']['case2_chk'] = 0
+    if up_chk_b_case2 > 0.1:
+        t_record['record']['case2_chk'] = 0
+
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case1_chk']
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case2_chk']
     condition3 = t_record['position'] in checking[1:]
