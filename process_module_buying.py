@@ -297,8 +297,3 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
             else:
                 comnQueryWrk(curs, conn,"UPDATE deposit_holding SET dp_am = dp_am - {} WHERE coin_key=1".format(am_invest))
             comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'BUY', json.dumps(t_record['record']), report,dt))
-
-def calculate_up_chk(cp, chk_value):
-    if chk_value <= 0:
-        return 0
-    return -0.05 + ((float(cp) - chk_value) / chk_value) * 100
