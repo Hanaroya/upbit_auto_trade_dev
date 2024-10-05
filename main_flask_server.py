@@ -171,7 +171,7 @@ def clean_blacklist():
     conn, curs = comnQueryStrt()
     try:
         now = datetime.datetime.now()
-        timeout = comnQuerySel("SELECT c_code, timeout FROM blacklist")
+        timeout = comnQuerySel(conn=conn, curs=curs, sqlText="SELECT c_code, timeout FROM blacklist")
         for coin in timeout:
             timeout_chk = now - datetime.timedelta(minutes=coin['timeout']) # 너무 판매후 즉시 재구매가 나오길래 추가   
             query = "DELETE FROM blacklist WHERE date < '{}' and c_code='{}'".format(timeout_chk.strftime("%Y-%m-%d %H:%M:%S"), coin['c_code'])
