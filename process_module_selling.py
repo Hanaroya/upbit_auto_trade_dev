@@ -238,10 +238,10 @@ def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi, ubmi_bef
     if ubmi - ubmi_before < -20: checker = 0.05
     if case1_chk == True and up_chk_b > checker and rsi_S == 'go':
         if trade_factors.iloc[-1]['signal'] > 0:
-            if ((trade_factors.iloc[-1]['signal'] * 1.3) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 3.5
+            if ((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 3.5
                 ) or (sma_check(trade_factors=sma200)== True and sma200.iloc[-1]['sma20'] > sma200.iloc[-1]['sma10'] * 1.03)): return True
         elif trade_factors.iloc[-1]['signal'] < 0:
-            if (((trade_factors.iloc[-1]['signal'] * 0.7) < trade_factors.iloc[-1]['macd'] < 0) or (trade_factors.iloc[-1]['macd'] > 0
+            if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < 0) or (trade_factors.iloc[-1]['macd'] > 0
                 ) or (sma_check(trade_factors=sma200)== True and sma200.iloc[-1]['sma20'] > sma200.iloc[-1]['sma10'] * 1.03)): return True
     return False
 
@@ -250,7 +250,7 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차상의 
     checker = 0.5
     if ubmi - ubmi_before < -20: checker = 0.05
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.995) # MACD가 시그널 보다 낮은데 가격이 높을 경우
+        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10'] # 이동평균선 20이 10보다 클 경우
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (trade_factors.iloc[-1]['rsi_K'] < 75 and trade_factors.iloc[-1]['rsi_D'] < 55))
@@ -258,7 +258,7 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차상의 
             ):
             return True
     elif up_chk_b > checker and trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.005)
+        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5)
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10']
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
