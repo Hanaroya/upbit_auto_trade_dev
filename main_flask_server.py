@@ -180,7 +180,8 @@ buying_process_lock2 = threading.Lock()
 buying_process_lock3 = threading.Lock()
 buying_process_lock4 = threading.Lock()
 buying_process_lock5 = threading.Lock()
-selling_process_lock = threading.Lock()
+selling_process_lock1 = threading.Lock()
+selling_process_lock2 = threading.Lock()
 buy_check_lock = threading.Lock()
 sell_check_lock = threading.Lock()
 
@@ -416,21 +417,21 @@ def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
 
 @scheduler.task('cron', id='selling_process_wrapper1', coalesce=False, max_instances=1, second='*/30', misfire_grace_time=None)
 def selling_process_wrapper1(): # 판매용 메소드 실행시키기 5분 간격
-    if selling_process_lock.acquire(blocking=False):
+    if selling_process_lock1.acquire(blocking=False):
         try:
             selling_process_regular()
         finally:
-            selling_process_lock.release()
+            selling_process_lock1.release()
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
 
 @scheduler.task('cron', id='selling_process_wrapper2', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=None)
 def selling_process_wrapper2(): # 판매용 메소드 실행시키기 5분 간격
-    if selling_process_lock.acquire(blocking=False):
+    if selling_process_lock2.acquire(blocking=False):
         try:
             selling_process_user()
         finally:
-            selling_process_lock.release()
+            selling_process_lock2.release()
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
 
