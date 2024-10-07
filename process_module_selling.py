@@ -41,25 +41,19 @@ def coin_receive_regular_selling():
 
             if t_coin != None:
                 trade_factors, sma200, close_base = tm.get_all_factors(t_coin['c_code'], 15)
-                strategy, case1, rsi_S = None, False, 'standby'
+                strategy, rsi_S = None, 'standby'
                 if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
                     t_coin['record'] = json.loads(t_coin['record'])
                     strategy = t_coin['record']['strategy']
-                    try: case1 = t_coin['record']['case1_chk']
-                    except: 
-                        case1 = False
                     try: rsi_S = t_coin['record']['rsi_S']
                     except: 
                         rsi_S = 'standby'
                 try:
                 # 투자 전략 계산용 factor 받아오기
                     if trade_factors.iloc[-1]['rsi_K'] >= 80 and trade_factors.iloc[-1]['rsi_D'] >= 80:
-                        case1 = True
-                        rsi_S = 'ready'
-                    else: 
-                        case1 = False
-                        if trade_factors.iloc[-1]['rsi_K'] < 90 and trade_factors.iloc[-1]['rsi_D'] < 80 and rsi_S == 'ready': 
-                            rsi_S = 'go'
+                        rsi_S = 'ready' 
+                    if trade_factors.iloc[-1]['rsi_K'] < trade_factors.iloc[-1]['rsi_D'] and 80 < trade_factors.iloc[-1]['rsi_K'] < 90 and rsi_S == 'ready': 
+                        rsi_S = 'go'
                 except Exception as e:
                     logging.error("Exception 발생!")
                     logging.error(traceback.format_exc())
@@ -76,7 +70,6 @@ def coin_receive_regular_selling():
                     'MACD_Signal': round(trade_factors.iloc[-1]['signal'], 7),
                     'rsi_K': round(trade_factors.iloc[-1]['rsi_K'], 2),
                     'rsi_D': round(trade_factors.iloc[-1]['rsi_D'], 2),
-                    'case1_chk': case1,
                     'rsi_S': rsi_S
                     }
                 up_chk_b = -0.05
@@ -151,25 +144,20 @@ def coin_receive_user_selling():
 
             if t_coin != None:
                 trade_factors, sma200, close_base = tm.get_all_factors(t_coin['c_code'], 15)
-                strategy, case1, rsi_S = None, False, 'standby'
+                strategy, rsi_S = None, 'standby'
                 if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
                     t_coin['record'] = json.loads(t_coin['record'])
                     strategy = t_coin['record']['strategy']
-                    try: case1 = t_coin['record']['case1_chk']
-                    except: 
-                        case1 = False
                     try: rsi_S = t_coin['record']['rsi_S']
                     except: 
                         rsi_S = 'standby'
                 try:
                 # 투자 전략 계산용 factor 받아오기
                     if trade_factors.iloc[-1]['rsi_K'] >= 80 and trade_factors.iloc[-1]['rsi_D'] >= 80:
-                        case1 = True
                         rsi_S = 'ready'
-                    else: 
-                        case1 = False
-                        if trade_factors.iloc[-1]['rsi_K'] < 90 and trade_factors.iloc[-1]['rsi_D'] < 80 and rsi_S == 'ready': 
-                            rsi_S = 'go'
+                    else: rsi_S = 'standby' 
+                    if trade_factors.iloc[-1]['rsi_K'] < trade_factors.iloc[-1]['rsi_D'] and trade_factors.iloc[-1]['rsi_K'] < 90 and rsi_S == 'ready': 
+                        rsi_S = 'go'
                 except Exception as e:
                     logging.error("Exception 발생!")
                     logging.error(traceback.format_exc())
@@ -186,7 +174,6 @@ def coin_receive_user_selling():
                     'MACD_Signal': round(trade_factors.iloc[-1]['signal'], 7),
                     'rsi_K': round(trade_factors.iloc[-1]['rsi_K'], 2),
                     'rsi_D': round(trade_factors.iloc[-1]['rsi_D'], 2),
-                    'case1_chk': case1,
                     'rsi_S': rsi_S
                     }
                 up_chk_b = -0.05
@@ -233,16 +220,11 @@ def coin_receive_user_selling():
     finally: 
         comnQueryCls(curs, conn)
 
-def case1_check(trade_factors,sma200, case1_chk, up_chk_b, rsi_S, ubmi, ubmi_before): # 최상의 경우를 염두하고 작성한 케이스 1
+def case1_check(up_chk_b, rsi_S, ubmi, ubmi_before): # 최상의 경우를 염두하고 작성한 케이스 1
     checker = 0.5
     if ubmi - ubmi_before < -20: checker = 0.05
-    if case1_chk == True and up_chk_b > checker and rsi_S == 'go':
-        if trade_factors.iloc[-1]['signal'] > 0:
-            if ((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 3.5
-                ) or (sma_check(trade_factors=sma200)== True and sma200.iloc[-1]['sma20'] > sma200.iloc[-1]['sma10'] * 1.03)): return True
-        elif trade_factors.iloc[-1]['signal'] < 0:
-            if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd'] < 0) or (trade_factors.iloc[-1]['macd'] > 0
-                ) or (sma_check(trade_factors=sma200)== True and sma200.iloc[-1]['sma20'] > sma200.iloc[-1]['sma10'] * 1.03)): return True
+    if up_chk_b > checker and rsi_S == 'go':        
+        return True
     return False
 
 # 케이스2의 경우 많이 겹치는 부분이 많기 때문에 일정 퍼센트 이상 이익이 날 경우만 통과
@@ -253,13 +235,14 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차상의 
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10'] # 이동평균선 20이 10보다 클 경우
-            ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (trade_factors.iloc[-1]['rsi_K'] < 75 and trade_factors.iloc[-1]['rsi_D'] < 55))
+            ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
+                trade_factors.iloc[-1]['rsi_K'] < 75 and trade_factors.iloc[-1]['rsi_D'] < 55))
             # 저번 회차의 최대값보다 현재 값이 높은데 rsi_K 값이 75 이하 일 경우 
             ):
             return True
     elif up_chk_b > checker and trade_factors.iloc[-1]['signal'] < 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
-            ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5)
+            ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10']
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
                 trade_factors.iloc[-1]['rsi_K'] < 80 and trade_factors.iloc[-1]['rsi_D'] < 50))
@@ -312,7 +295,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     # 만약 UBMI 지수가 -10 이하일 경우 limit_sell 를 써서 해당 가격에 판매 요청을 한다, 
     # 포지션이 selling 일 경우 오더 채크로 해당 주문이 완료 되었는지 확인한다. 
     case1_chk, case2_chk, case3_chk = False, False, False
-    if (case1_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, case1_chk=t_record['record']['case1_chk'], up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True and case2_chk == False and case3_chk == False)): 
+    if (case1_check(ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True and case2_chk == False and case3_chk == False)): 
         case1_chk, t_record['position'] = True, 'reach profit point case 1'
     if (case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and (t_record['hold'] == True and case1_chk == False and case3_chk == False)):
         case2_chk, t_record['position'] = True, 'reach profit point case 2'
@@ -344,7 +327,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     elif ubmi > 50: checker = 0.8
     elif ubmi - ubmi_before < -20: checker = 0.05
     
-    if up_chk_b < -0.95 and ubmi - ubmi_before < -20 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
+    if up_chk_b < -0.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 5 -1% check'
     if up_chk_b > checker and ubmi - ubmi_before < -20 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 6 {}% check'.format(checker)

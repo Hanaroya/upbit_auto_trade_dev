@@ -140,12 +140,14 @@ def case1_check(trade_factors, ubmi, ubmi_before):
         if ((trade_factors.iloc[-2]['signal'] * 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
                 ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_D'] + checker < trade_factors.iloc[-2]['rsi_K']
+        ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
         ) and (trade_factors.iloc[-3]['rsi_D'] < trade_factors.iloc[-2]['rsi_D']):
             return True
     elif trade_factors.iloc[-2]['signal'] > 0: # 극단적인 과매도 확인 장치
         if ((trade_factors.iloc[-2]['signal'] / 4) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] / 1.7) 
                 ) and (trade_factors.iloc[-3]['macd'] > (trade_factors.iloc[-2]['macd'] * 1.05))
         ) and (trade_factors.iloc[-2]['rsi_D'] + checker < trade_factors.iloc[-2]['rsi_K']
+        ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
         ) and (trade_factors.iloc[-3]['rsi_D'] < trade_factors.iloc[-2]['rsi_D']):
             return True
     return False
