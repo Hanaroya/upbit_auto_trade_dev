@@ -131,12 +131,12 @@ def coin_receive_buying(c_rank):
     finally:
         comnQueryCls(curs, conn)
 
-def case1_check(trade_factors, ubmi, ubmi_before):
+def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하락세 확인 장치 
     checker = 10
     if ubmi < -50: checker = 25
     elif ubmi > 50: checker = 5
     elif ubmi - ubmi_before < -20: checker = 35
-    if trade_factors.iloc[-2]['signal'] < 0: # 극단적인 과매도 하락세 확인 장치 
+    if trade_factors.iloc[-2]['signal'] < 0: 
         if ((trade_factors.iloc[-2]['signal'] * 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
                 ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_D'] + checker < trade_factors.iloc[-2]['rsi_K']
@@ -150,12 +150,13 @@ def case1_check(trade_factors, ubmi, ubmi_before):
             return True
     return False
 
+def macd_check(trade_factors):
+    if (trade_factors.iloc[-2]['signal'] * 0.95) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.05):
+        return True                    
+    return False
+
 def case2_check(trade_factors, ubmi, ubmi_before):
      # 과매수 진입전 상승세 확인 장치
-    # checker = 10
-    # if ubmi < -50: checker = 25
-    # elif ubmi > 50: checker = 5
-    # elif ubmi - ubmi_before < -20: checker = 35
     if trade_factors.iloc[-1]['signal'] < 0 and (ubmi - ubmi_before) > 10:
         if (((trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.5)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
@@ -228,7 +229,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if up_chk_b_case2 > 0.1:
         t_record['record']['case2_chk'] = 0
 
-    condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case1_chk']
+    condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case1_chk'] and macd_check(trade_factors=trade_factors)
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case2_chk']
     condition3 = t_record['position'] in checking[1:]
 
