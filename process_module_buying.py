@@ -136,18 +136,16 @@ def case1_check(trade_factors, ubmi, ubmi_before):
     if ubmi < -50: checker = 25
     elif ubmi > 50: checker = 5
     elif ubmi - ubmi_before < -20: checker = 35
-    if trade_factors.iloc[-2]['signal'] < 0: # 극단적인 과매도 확인 장치
+    if trade_factors.iloc[-2]['signal'] < 0: # 극단적인 과매도 하락세 확인 장치 
         if ((trade_factors.iloc[-2]['signal'] * 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
                 ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
         ) and (trade_factors.iloc[-2]['rsi_D'] + checker < trade_factors.iloc[-2]['rsi_K']
-        ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
         ) and (trade_factors.iloc[-3]['rsi_D'] < trade_factors.iloc[-2]['rsi_D']):
             return True
     elif trade_factors.iloc[-2]['signal'] > 0: # 극단적인 과매도 확인 장치
         if ((trade_factors.iloc[-2]['signal'] / 4) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] / 1.7) 
                 ) and (trade_factors.iloc[-3]['macd'] > (trade_factors.iloc[-2]['macd'] * 1.05))
         ) and (trade_factors.iloc[-2]['rsi_D'] + checker < trade_factors.iloc[-2]['rsi_K']
-        ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
         ) and (trade_factors.iloc[-3]['rsi_D'] < trade_factors.iloc[-2]['rsi_D']):
             return True
     return False
@@ -161,11 +159,13 @@ def case2_check(trade_factors, ubmi, ubmi_before):
     if trade_factors.iloc[-1]['signal'] < 0 and (ubmi - ubmi_before) > 10:
         if (((trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.5)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
+            ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
         ):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0 and (ubmi - ubmi_before) > 10:
         if (((trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.5)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
+            ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
         ):
             return True
     return False
