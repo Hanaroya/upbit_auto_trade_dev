@@ -51,7 +51,9 @@ def coin_receive_regular_selling():
                 try:
                 # 투자 전략 계산용 factor 받아오기
                     if trade_factors.iloc[-1]['rsi_K'] >= 80 and trade_factors.iloc[-1]['rsi_D'] >= 80:
-                        rsi_S = 'ready' 
+                        rsi_S = 'ready'
+                    else: rsi_S = 'standby' 
+                     
                     if trade_factors.iloc[-1]['rsi_K'] < trade_factors.iloc[-1]['rsi_D'] and rsi_S == 'ready': 
                         rsi_S = 'go'
                 except Exception as e:
@@ -155,7 +157,8 @@ def coin_receive_user_selling():
                     if trade_factors.iloc[-1]['rsi_K'] >= 80 and trade_factors.iloc[-1]['rsi_D'] >= 80:
                         rsi_S = 'ready'
                     else: rsi_S = 'standby' 
-                    if trade_factors.iloc[-1]['rsi_K'] < trade_factors.iloc[-1]['rsi_D'] and trade_factors.iloc[-1]['rsi_K'] < 90 and rsi_S == 'ready': 
+                    
+                    if trade_factors.iloc[-1]['rsi_K'] < trade_factors.iloc[-1]['rsi_D'] and rsi_S == 'ready': 
                         rsi_S = 'go'
                 except Exception as e:
                     logging.error("Exception 발생!")
