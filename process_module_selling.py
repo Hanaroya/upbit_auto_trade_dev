@@ -77,9 +77,8 @@ def coin_receive_regular_selling():
                 t_coin['percent'] = up_chk_b
                 if dt.minute % 1 == 0 and dt.second == 0:
                     mp.regular_percent_message(channel="#auto-trade",coin=t_coin['c_code'], percent=up_chk_b)
-                user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code']))[0]['user_call']
                 if t_coin['hold'] == True and s_flag == False and str(t_coin['record']['strategy']).find('B') > -1:
-                    try: t_coin = selling_process(c_list=trade_factors,sma200=sma200,t_record=t_coin, total_am=total_am, user_call=user_call, curs=curs,conn=conn)
+                    try: t_coin = selling_process(c_list=trade_factors,sma200=sma200,t_record=t_coin, total_am=total_am, curs=curs,conn=conn)
                     except Exception as e:
                         logging.error("Exception 발생!")
                         logging.error(traceback.format_exc())
@@ -183,7 +182,7 @@ def coin_receive_user_selling():
                     mp.regular_percent_message(channel="#auto-trade",coin=t_coin['c_code'], percent=up_chk_b)
                 user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code']))[0]['user_call']
                 if t_coin['hold'] == True and s_flag == False and str(t_coin['record']['strategy']).find('B') > -1 and user_call == 1:
-                    try: t_coin = selling_process(c_list=trade_factors,sma200=sma200,t_record=t_coin, total_am=total_am, user_call=user_call, curs=curs,conn=conn)
+                    try: t_coin = selling_process_user(c_list=trade_factors,t_record=t_coin, total_am=total_am, user_call=user_call, curs=curs,conn=conn)
                     except Exception as e:
                         logging.error("Exception 발생!")
                         logging.error(traceback.format_exc())
@@ -275,8 +274,93 @@ def add_to_blacklist(c_code, timeout, curs, conn):
     query = "INSERT INTO blacklist (c_code, date, timeout) VALUES ('{}', '{}', {})".format(c_code, now, timeout)
     comnQueryWrk(curs=curs, conn=conn, sqlText=query)
 
+def selling_process_user(c_list, t_record, total_am:float, user_call:bool, curs, conn): # 가지고 있는 코인 판매 가능 체크
+    mes = ''
+    dt = datetime.datetime.now()
+    dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
+    global simulate, s_flag
+    total_profit = comnQuerySel(curs, conn,"SELECT (pr_am - (or_am * 0.12 - sv_am)) as pr_am FROM deposit_holding WHERE coin_key=1")[0]['pr_am'] # 수익금 확인
+    if type(total_profit) != float or total_profit < 0: total_profit = 0
+    cp = float(c_list.iloc[-1]['close'])
+    up_chk_b = -0.05 # 전체 수익의 25% ~ 50%일 경우 긴급판매 발동  
+    up_chk_b += ((float(cp) - t_record['price_b']) / t_record['price_b']) * 100
+    
+    info = {
+        'sell_uuid': '', 
+        'volume': 0,
+        'side': 'ask',
+        'state': 'wait'
+        }
 
-def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, curs, conn): # 가지고 있는 코인 판매 가능 체크
+    if user_call == True:
+        try:    
+            if s_flag == False: 
+                info = {}
+                if simulate == False and t_record['r_holding'] == True and t_record['sell_uuid'] == '': # 시뮬레이션이 아닐때 
+                    if (str(t_record['position']).find('reach profit point') > -1):
+                        info = tm.limit_call_sell(coin=t_record['c_code'], price=cp, volume=t_record['volume'])
+                    elif (str(t_record['position']).find('emergency') > -1):
+                        info = tm.trade_call_sell(coin=t_record['c_code'], volume=t_record['volume'])
+                    t_record['sell_uuid'] = info['uuid']  
+                    comnQueryWrk(curs, conn,"UPDATE coin_list_selling SET sell_uuid='{}' WHERE c_code='{}'".format(info['uuid'], t_record['c_code']))
+                elif simulate == True and t_record['r_holding'] == False: 
+                    info['state'] = 'cancelled'
+                    info['volume'] = 0
+        except Exception as e:
+            logging.error("Exception 발생!")
+            logging.error(traceback.format_exc())
+            mp.post_message("#auto-trade", "{}: {}, {}".format(t_record['c_code'], e, info))
+            comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'ERROR', '', """{}""".format(traceback.format_exc()),dt))
+            info = None
+        if info != None:
+            try: cp = float(info['trades'][0]['price'])
+            except: cp = c_list.iloc[-1]['close']
+            # if ((info != None or simulate == True) and t_record['position'] == 'holding') or t_record['sell_uuid'] == 'canceled':
+            up_chk_b = -0.05 # 전체 수익의 25% ~ 50%일 경우 긴급판매 발동  
+            up_chk_b += ((float(cp) - t_record['price_b']) / t_record['price_b']) * 100
+            # 수익 소수점 반올림
+            deposit = round(t_record['deposit'] + (t_record['deposit'] * (up_chk_b/100)))
+            op = round(total_am)
+            remain = op % 22
+            op -= remain
+            op = op / 22
+            # 판매 메세지 변경
+            if user_call == True: mes = "User ask for Sell" # 사용자 신청
+            else: mes = '이상 발생'
+            
+            if (user_call == 1):
+                if user_call == True: t_record['record']['strategy'] = 'case U S ' + t_record['record']['strategy']
+
+                #이익금 정리
+                if user_call == True: report = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n사용자 요청 발생\n급매도 요청 발생"
+                mp.post_message("#auto-trade", report) #Slack에 메세지 전송
+                comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'SELL', json.dumps(t_record['record']), report,dt))
+                tm.profit_control(total_am=total_am,deposit=deposit) 
+                per_deal = format(up_chk_b, ".3f")
+                message = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\nprice_b: "+ str(t_record['price_b'])+"\nprice_s: "+str(cp)+ "\ndate_time: " + str(dt_str) +"\nStrategy: "+ str(t_record['record']['strategy']) + "\nresult: {}%, W {}".format(per_deal, deposit)+"\nSOLD: {}".format(mes)
+                
+                mp.post_message("#auto-trade", message) #Slack에 메세지 전송
+                # 결과 DB 전송 
+                lst={'c_code': t_record['c_code'], 'c_rank':int(t_record['record']['strategy'][-1]), 'current_price': cp, 'percent': per_deal, 'date_time':dt, 'c_status': 'SOLD: {}'.format(t_record['record']['strategy']), 'reason': mes, 'deposit': deposit}
+                comnQueryWrk(curs, conn,sqlTextBuilder(li=lst,table='trade_history')) #거래 기록 추가
+                
+                comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'SELL', json.dumps(t_record['record']), message,dt))
+                t_record['hold'] = False # 판매 완료후 설정 변경 
+                t_record['position'] = 'holding'
+                t_record['sell_uuid'] = ''
+                t_record['price_b'] = None
+                t_record['deposit'] = 0
+                comnQueryWrk(curs, conn,"UPDATE coin_list SET hold=0,price_b=NULL,deposit=0,position='holding',buy_uuid='' WHERE c_code='{}'".format(t_record['c_code']))
+                t.sleep(0.01)
+                comnQueryWrk(curs, conn,"DELETE FROM coin_list_selling WHERE c_code='{}'".format(t_record['c_code'])) #판매 리스트에서 제거
+                t.sleep(0.01)
+                comnQueryWrk(curs, conn,"DELETE FROM coin_holding WHERE c_code='{}'".format(t_record['c_code'])) #코인 보유 리스트에서 제거   
+    return t_record
+        # 판매 완료 대기중, 현재가가 지정된 전저가 이하로 내려갈 경우, 사용자 판매 요청이 있을 경우
+        # print("info['state'] != wait 확인후 주문 상태 조회후 판매 완료 되었을 경우")
+        # print("코인 상태 업데이트 및 메세지 전달")
+
+def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가지고 있는 코인 판매 가능 체크
     mes = ''
     dt = datetime.datetime.now()
     dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -340,7 +424,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
     if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1): 
         info['state'] = 'done'
 
-    if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1) or user_call == True:
+    if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
         try:    
             if s_flag == False: 
                 info = {}
@@ -385,10 +469,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
                     # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 2분 지나면 블랙리스트에서 삭제하는 코드 생성
                     add_to_blacklist(t_record['c_code'], 2, curs, conn)
                     mes = "매도 고점 도달"
-            elif user_call == True: mes = "User ask for Sell" # 사용자 신청
             else: mes = '이상 발생'
             
-            if (user_call == 1 or str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
+            if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
                 if case1_chk == True: t_record['record']['strategy'] = 'case 1 S ' + t_record['record']['strategy']
                 elif case2_chk == True: t_record['record']['strategy'] = 'case 2 S '+ t_record['record']['strategy']
                 elif case3_chk == True: t_record['record']['strategy'] = 'case 3 S '+ t_record['record']['strategy']
@@ -400,7 +483,6 @@ def selling_process(c_list, t_record, sma200, total_am:float, user_call:bool, cu
                     report = "c_code: " + t_record['c_code'] +"\nposition: " + t_record['position'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n손절 포인트 도달\n급매도 요청 발생"
                 elif str(t_record['position']).find('reach profit point') > -1:
                     report = "c_code: " + t_record['c_code'] +"\nposition: " + t_record['position'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n익절 포인트 도달\n급매도 요청 발생"
-                elif user_call == True: report = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n사용자 요청 발생\n급매도 요청 발생"
                 mp.post_message("#auto-trade", report) #Slack에 메세지 전송
                 comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'SELL', json.dumps(t_record['record']), report,dt))
                 tm.profit_control(total_am=total_am,deposit=deposit) 
