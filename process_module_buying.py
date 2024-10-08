@@ -151,8 +151,12 @@ def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하�
     return False
 
 def macd_check(trade_factors):
-    if (trade_factors.iloc[-2]['signal'] * 0.95) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.05):
-        return True                    
+    if trade_factors.iloc[-2]['signal'] < 0: 
+        if (trade_factors.iloc[-2]['signal'] * 1.2) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.8):
+            return True
+    elif trade_factors.iloc[-2]['signal'] > 0: # 극단적인 과매도 확인 장치
+        if (trade_factors.iloc[-2]['signal'] * 0.8) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.2):
+            return True                    
     return False
 
 def case2_check(trade_factors, ubmi, ubmi_before):
@@ -170,11 +174,6 @@ def case2_check(trade_factors, ubmi, ubmi_before):
         ):
             return True
     return False
-
-def calculate_up_chk(cp, chk_value):
-    if chk_value <= 0:
-        return 0
-    return -0.05 + ((float(cp) - chk_value) / chk_value) * 100
 
 def sma_check(trade_factors):
     ema20 = trade_factors.iloc[-1]['sma20']
@@ -221,17 +220,12 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if case2_chk:
         t_record['record']['case2_chk'] = cp
 
-    up_chk_b_case1 = calculate_up_chk(cp, t_record['record']['case1_chk'])
-    up_chk_b_case2 = calculate_up_chk(cp, t_record['record']['case2_chk'])
-
-    if up_chk_b_case1 > 0.1:
-        t_record['record']['case2_chk'] = 0
-    if up_chk_b_case2 > 0.1:
-        t_record['record']['case2_chk'] = 0
-
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case1_chk'] and macd_check(trade_factors=trade_factors)
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case2_chk']
     condition3 = t_record['position'] in checking[1:]
+    
+    if cp > t_record['record']['case1_chk']: t_record['record']['case1_chk'] = 0
+    if cp > t_record['record']['case2_chk']: t_record['record']['case2_chk'] = 0
 
     if condition1 or condition2 or condition3:
         try:
