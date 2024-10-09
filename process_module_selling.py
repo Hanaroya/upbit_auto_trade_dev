@@ -121,6 +121,7 @@ def coin_receive_user_selling():
     tm.trade_strt()
     global s_flag, simulate
     t_coin = None
+    user_call = False
     # while True:
     try:
         dt = datetime.datetime.now()
@@ -144,7 +145,7 @@ def coin_receive_user_selling():
                 t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(i['c_code']))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
             except: t_coin = None
 
-            if user_call == 1 and t_coin != None:
+            if user_call == True and t_coin != None:
                 trade_factors, sma200, close_base = tm.get_all_factors(t_coin['c_code'], 15)
                 strategy, rsi_S = None, 'standby'
                 if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
