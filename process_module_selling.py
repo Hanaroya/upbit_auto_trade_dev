@@ -139,10 +139,12 @@ def coin_receive_user_selling():
         total_am = round(comnQuerySel(curs, conn,"SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88)
 
         for i in sql_result:
-            try: t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(i['c_code']))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
+            try:
+                user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code']))[0]['user_call'] 
+                t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(i['c_code']))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
             except: t_coin = None
 
-            if t_coin != None:
+            if user_call == 1 and t_coin != None:
                 trade_factors, sma200, close_base = tm.get_all_factors(t_coin['c_code'], 15)
                 strategy, rsi_S = None, 'standby'
                 if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
@@ -181,7 +183,6 @@ def coin_receive_user_selling():
                 up_chk_b += ((trade_factors.iloc[-1]['close'] - t_coin['price_b']) / t_coin['price_b']) * 100
                 t_coin['percent'] = up_chk_b
                 
-                user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code']))[0]['user_call']
                 if t_coin['hold'] == True and s_flag == False and str(t_coin['record']['strategy']).find('B') > -1 and user_call == 1:
                     try: t_coin = selling_process_user(c_list=trade_factors,t_record=t_coin, total_am=total_am, user_call=user_call, curs=curs,conn=conn)
                     except Exception as e:

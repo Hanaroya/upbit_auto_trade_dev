@@ -133,44 +133,42 @@ def coin_receive_buying(c_rank):
 
 def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하락세 확인 장치 
     checker = 10
-    if ubmi < -50: checker = 25
+    if ubmi < -50: checker = 15
     elif ubmi > 50: checker = 5
-    elif ubmi - ubmi_before < -20: checker = 35
-    if trade_factors.iloc[-2]['signal'] < 0: 
-        if ((trade_factors.iloc[-2]['signal'] * 1.7) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.4) 
-                ) and (trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'])
-        ) and (trade_factors.iloc[-2]['rsi_D'] + checker < trade_factors.iloc[-2]['rsi_K']
-        ) and (trade_factors.iloc[-3]['rsi_D'] < trade_factors.iloc[-2]['rsi_D']):
+    elif ubmi - ubmi_before < -20: checker = 15
+    if trade_factors.iloc[-1]['signal'] < 0: 
+        if ((trade_factors.iloc[-1]['signal'] * 1.5) > (trade_factors.iloc[-1]['macd']
+                ) and (trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
+        ) and (trade_factors.iloc[-1]['rsi_D'] + checker > trade_factors.iloc[-1]['rsi_K']):
             return True
-    elif trade_factors.iloc[-2]['signal'] > 0: # 극단적인 과매도 확인 장치
-        if ((trade_factors.iloc[-2]['signal'] / 4) < (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] / 1.7) 
-                ) and (trade_factors.iloc[-3]['macd'] > (trade_factors.iloc[-2]['macd'] * 1.05))
-        ) and (trade_factors.iloc[-2]['rsi_D'] + checker < trade_factors.iloc[-2]['rsi_K']
-        ) and (trade_factors.iloc[-3]['rsi_D'] < trade_factors.iloc[-2]['rsi_D']):
+    elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 확인 장치
+        if (((trade_factors.iloc[-1]['signal'] / 1.5) > trade_factors.iloc[-1]['macd']
+             ) and (trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
+        ) and (trade_factors.iloc[-1]['rsi_D'] + checker > trade_factors.iloc[-1]['rsi_K']):
             return True
     return False
 
 def macd_check(trade_factors):
-    if trade_factors.iloc[-2]['signal'] < 0: 
-        if (trade_factors.iloc[-2]['signal'] * 1.2) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.8):
+    if trade_factors.iloc[-1]['signal'] < 0: 
+        if (trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8):
             return True
-    elif trade_factors.iloc[-2]['signal'] > 0: # 극단적인 과매도 확인 장치
-        if (trade_factors.iloc[-2]['signal'] * 0.8) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.2):
+    elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 확인 장치
+        if (trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2):
             return True                    
     return False
 
-def case2_check(trade_factors, ubmi, ubmi_before):
+def case2_check(trade_factors):
      # 과매수 진입전 상승세 확인 장치
-    if trade_factors.iloc[-1]['signal'] < 0 and ((ubmi - ubmi_before) > 15 and ubmi > 50):
-        if (((trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.5)
+    if trade_factors.iloc[-1]['signal'] < 0:
+        if (((trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
+            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal'] or trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal']
         ):
             return True
-    elif trade_factors.iloc[-1]['signal'] > 0 and ((ubmi - ubmi_before) > 15 and ubmi > 50):
-        if (((trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.5)
+    elif trade_factors.iloc[-1]['signal'] > 0:
+        if (((trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
+            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal'] or trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal']
         ):
             return True
     return False
@@ -213,7 +211,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         case1_chk = case1_check(trade_factors=trade_factors, ubmi=ubmi, ubmi_before=ubmi_before)
 
     if t_record['record']['case2_chk'] == 0:
-        case2_chk = case2_check(trade_factors=trade_factors, ubmi=ubmi, ubmi_before=ubmi_before)
+        case2_chk = case2_check(trade_factors=trade_factors)
 
     if case1_chk:
         t_record['record']['case1_chk'] = cp
