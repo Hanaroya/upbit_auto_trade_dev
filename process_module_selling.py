@@ -77,8 +77,7 @@ def coin_receive_regular_selling():
                 up_chk_b = -0.05
                 up_chk_b += ((trade_factors.iloc[-1]['close'] - t_coin['price_b']) / t_coin['price_b']) * 100
                 t_coin['percent'] = up_chk_b
-                if dt.minute % 1 == 0 and dt.second == 0:
-                    mp.regular_percent_message(channel="#auto-trade",coin=t_coin['c_code'], percent=up_chk_b)
+                
                 if t_coin['hold'] == True and s_flag == False and str(t_coin['record']['strategy']).find('B') > -1:
                     try: t_coin = selling_process(c_list=trade_factors,sma200=sma200,t_record=t_coin, total_am=total_am, curs=curs,conn=conn)
                     except Exception as e:
@@ -181,8 +180,7 @@ def coin_receive_user_selling():
                 up_chk_b = -0.05
                 up_chk_b += ((trade_factors.iloc[-1]['close'] - t_coin['price_b']) / t_coin['price_b']) * 100
                 t_coin['percent'] = up_chk_b
-                if dt.minute % 1 == 0 and dt.second == 0:
-                    mp.regular_percent_message(channel="#auto-trade",coin=t_coin['c_code'], percent=up_chk_b)
+                
                 user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code']))[0]['user_call']
                 if t_coin['hold'] == True and s_flag == False and str(t_coin['record']['strategy']).find('B') > -1 and user_call == 1:
                     try: t_coin = selling_process_user(c_list=trade_factors,t_record=t_coin, total_am=total_am, user_call=user_call, curs=curs,conn=conn)

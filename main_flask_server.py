@@ -15,6 +15,7 @@ from comn import comnQueryStrt, sqlTextBuilder, comnQueryWrk, comnQuerySel, comn
 from werkzeug.security import generate_password_hash, check_password_hash
 import process_module_buying as mb
 import process_module_selling as ms
+import time as t
 
 # 기본 설정 세팅
 myprops = gp.get_properties()
@@ -185,7 +186,7 @@ selling_process_lock2 = threading.Lock()
 buy_check_lock = threading.Lock()
 sell_check_lock = threading.Lock()
 
-@scheduler.task('cron', id='clean_blacklist', coalesce=False, max_instances=1, second='*/15', misfire_grace_time=None)
+@scheduler.task('cron', id='clean_blacklist', coalesce=False, max_instances=1, second='*/15')
 def clean_blacklist():
     conn, curs = comnQueryStrt()
     try:
@@ -199,7 +200,7 @@ def clean_blacklist():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)
     
-@scheduler.task('cron', id='hourly_report', coalesce=False, max_instances=1, minute=0, second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='hourly_report', coalesce=False, max_instances=1, minute=0, second=0)
 def hourly_report(): # 1시간 간격 리포트 전송 
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
@@ -212,7 +213,7 @@ def hourly_report(): # 1시간 간격 리포트 전송
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)
 
-@scheduler.task('cron', id='hourly_coin_list_check', coalesce=False, max_instances=1, minute='*/30', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='hourly_coin_list_check', coalesce=False, max_instances=1, minute='*/30', second=0)
 def hourly_coin_list_check():  # 30분 간격 코인 리스트 다시 정렬 (거래 대금순)
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
@@ -225,13 +226,13 @@ def hourly_coin_list_check():  # 30분 간격 코인 리스트 다시 정렬 (�
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)
 
-@scheduler.task('cron', id='five_min_ubmi_update', coalesce=False, max_instances=1, minute='*/5', misfire_grace_time=None)
+@scheduler.task('cron', id='five_min_ubmi_update', coalesce=False, max_instances=1, minute='*/5')
 def five_min_ubmi_update(): #  UBMI 지수 (코인 거래량) 체크용 5분 간격
     # if 작동중 체크, 
     mmp.five_min_ubmi_update()
 
 
-@scheduler.task('cron', id='daily_report', coalesce=False, max_instances=1,  hour='19-21', second='*/20', misfire_grace_time=None)
+@scheduler.task('cron', id='daily_report', coalesce=False, max_instances=1,  hour='19-21', second='*/20')
 def daily_report():
     # if 작동중 체크, 
     conn, curs = comnQueryStrt()
@@ -246,7 +247,7 @@ def daily_report():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)
 
-@scheduler.task('cron', id='daily_report_chk', coalesce=False, max_instances=1, hour='5-18', minute='*/20', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='daily_report_chk', coalesce=False, max_instances=1, hour='5-18', minute='*/20')
 def daily_report_chk():
     conn, curs = comnQueryStrt()
     try: 
@@ -257,7 +258,7 @@ def daily_report_chk():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='ubmi_check', coalesce=False, max_instances=1, minute='*/5', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='ubmi_check', coalesce=False, max_instances=1, hour='13-23', minute='*/5')
 def ubmi_check():
     conn, curs = comnQueryStrt()
     try: 
@@ -265,13 +266,25 @@ def ubmi_check():
         ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
         if ubmi < -50 or ubmi - ubmi_before < -20:
             comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1")
-        elif ubmi > 0:
+        elif ubmi > 0 or ubmi - ubmi_before > 20:
             comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1")
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='19-23', minute='*/5', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='up_down_check', coalesce=False, max_instances=1, minute='*/5')
+def up_down_check():
+    
+    conn, curs = comnQueryStrt()
+    try: 
+        coin_data = comnQuerySel(curs, conn,"SELECT * FROM coin_holding")
+        for t_coin in coin_data:
+            mp.regular_percent_message(channel="#auto-trade",coin=t_coin['c_code'], percent=t_coin['current_percent'])
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally: comnQueryCls(curs, conn)   
+
+@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='19-23', minute='*/5')
 def regular_buying_hour1():
     conn, curs = comnQueryStrt()
     try: 
@@ -282,7 +295,7 @@ def regular_buying_hour1():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='regular_buying_hour2', coalesce=False, max_instances=1, hour='0-4', minute='*/5', second=0, misfire_grace_time=None)
+@scheduler.task('cron', id='regular_buying_hour2', coalesce=False, max_instances=1, hour='0-4', minute='*/5')
 def regular_buying_hour2():
     conn, curs = comnQueryStrt()
     try: 
@@ -293,7 +306,7 @@ def regular_buying_hour2():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
     
-@scheduler.task('cron', id='buy_check', coalesce=False, max_instances=1, second="*/10", misfire_grace_time=None)
+@scheduler.task('cron', id='buy_check', coalesce=False, max_instances=1, second="*/10")
 def buy_check():
     conn, curs = comnQueryStrt()
     try:
@@ -321,7 +334,7 @@ def buy_check():
         comnQueryWrk(curs, conn,"UPDATE trading_list SET buy_chk={} WHERE coin_key=1".format(False))
         comnQueryCls(curs, conn)
         
-@scheduler.task('cron', id='sell_check', coalesce=False, max_instances=1, second="*/10", misfire_grace_time=None)
+@scheduler.task('cron', id='sell_check', coalesce=False, max_instances=1, second="*/10")
 def sell_check():
     conn, curs = comnQueryStrt()
     try:
@@ -361,7 +374,7 @@ def sell_check():
         comnQueryWrk(curs, conn,"UPDATE trading_list SET sell_chk={} WHERE coin_key=1".format(False))
         comnQueryCls(curs, conn)
 
-@scheduler.task('cron', id='get_real_balance', coalesce=False, max_instances=1, second="*/30", misfire_grace_time=None)
+@scheduler.task('cron', id='get_real_balance', coalesce=False, max_instances=1, second="*/30")
 def get_real_balance():
     conn, curs = comnQueryStrt()
     try: 
@@ -377,7 +390,7 @@ def get_real_balance():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)
 
-@scheduler.task('cron', id='buying_process_wrapper1', coalesce=False, max_instances=1, second='*/4', args=[1], misfire_grace_time=None)        
+@scheduler.task('cron', id='buying_process_wrapper1', coalesce=False, max_instances=1, second='*/4', args=[1])        
 def buying_process_wrapper1(*args): # 구매용 매소드 실행시키기
     if buying_process_lock1.acquire(blocking=False):
         try:
@@ -387,47 +400,51 @@ def buying_process_wrapper1(*args): # 구매용 매소드 실행시키기
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
     
-@scheduler.task('cron', id='buying_process_wrapper2', coalesce=False, max_instances=1, second='*/6', args=[2], misfire_grace_time=None)        
+@scheduler.task('cron', id='buying_process_wrapper2', coalesce=False, max_instances=1, second='*/6', args=[2])        
 def buying_process_wrapper2(*args): # 구매용 매소드 실행시키기
     if buying_process_lock2.acquire(blocking=False):
         try:
+            t.sleep(0.5)
             buying_process(*args)
         finally:
             buying_process_lock2.release()
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
     
-@scheduler.task('cron', id='buying_process_wrapper3', coalesce=False, max_instances=1, second='*/12', args=[3], misfire_grace_time=None)        
+@scheduler.task('cron', id='buying_process_wrapper3', coalesce=False, max_instances=1, second='*/12', args=[3])        
 def buying_process_wrapper3(*args): # 구매용 매소드 실행시키기
     if buying_process_lock3.acquire(blocking=False):
         try:
+            t.sleep(1)
             buying_process(*args)
         finally:
             buying_process_lock3.release()
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='buying_process_wrapper4', coalesce=False, max_instances=1, second='*/20', args=[4], misfire_grace_time=None)        
+@scheduler.task('cron', id='buying_process_wrapper4', coalesce=False, max_instances=1, second='*/20', args=[4])        
 def buying_process_wrapper4(*args): # 구매용 매소드 실행시키기
     if buying_process_lock4.acquire(blocking=False):
         try:
+            t.sleep(2)
             buying_process(*args)
         finally:
             buying_process_lock4.release()
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='buying_process_wrapper5', coalesce=False, max_instances=1, second='*/30', args=[5], misfire_grace_time=None)        
+@scheduler.task('cron', id='buying_process_wrapper5', coalesce=False, max_instances=1, second='*/30', args=[5])        
 def buying_process_wrapper5(*args): # 구매용 매소드 실행시키기
     if buying_process_lock5.acquire(blocking=False):
         try:
+            t.sleep(5)
             buying_process(*args)
         finally:
             buying_process_lock5.release()
     else:
         print("이전 buying_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='selling_process_wrapper1', coalesce=False, max_instances=1, second='*/30', misfire_grace_time=None)
+@scheduler.task('cron', id='selling_process_wrapper1', coalesce=False, max_instances=1, second='*/30')
 def selling_process_wrapper1(): # 판매용 메소드 실행시키기 5분 간격
     if selling_process_lock1.acquire(blocking=False):
         try:
@@ -437,7 +454,7 @@ def selling_process_wrapper1(): # 판매용 메소드 실행시키기 5분 간�
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='selling_process_wrapper2', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=None)
+@scheduler.task('cron', id='selling_process_wrapper2', coalesce=False, max_instances=1, second='*/5')
 def selling_process_wrapper2(): # 판매용 메소드 실행시키기 5분 간격
     if selling_process_lock2.acquire(blocking=False):
         try:
@@ -448,7 +465,7 @@ def selling_process_wrapper2(): # 판매용 메소드 실행시키기 5분 간�
         print("이전 selling_process가 아직 실행 중입니다.")
 
 
-@scheduler.task('cron', id='buy_check_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=None)
+@scheduler.task('cron', id='buy_check_wrapper', coalesce=False, max_instances=1, second='*/5')
 def buy_check_wrapper(): # 실제 구매 기록이 있을시 5초마다 해당 uuid 조회
     if buy_check_lock.acquire(blocking=False):
         try:
@@ -458,7 +475,7 @@ def buy_check_wrapper(): # 실제 구매 기록이 있을시 5초마다 해당 u
     else:
         print("이전 buy_check가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='sell_check_wrapper', coalesce=False, max_instances=1, second='*/5', misfire_grace_time=None)
+@scheduler.task('cron', id='sell_check_wrapper', coalesce=False, max_instances=1, second='*/5')
 def sell_check_wrapper(): # 실제 판매 기록이 있을시 5초마다 해당 uuid 조회
     if sell_check_lock.acquire(blocking=False):
         try:
