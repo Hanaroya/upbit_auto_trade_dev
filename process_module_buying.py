@@ -161,13 +161,13 @@ def macd_check(trade_factors):
 
 def case2_check(trade_factors, ubmi, ubmi_before):
      # 과매수 진입전 상승세 확인 장치
-    if trade_factors.iloc[-1]['signal'] < 0 and (ubmi - ubmi_before) > 10:
+    if trade_factors.iloc[-1]['signal'] < 0 and ((ubmi - ubmi_before) > 15 and ubmi > 50):
         if (((trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.5)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
             ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
         ):
             return True
-    elif trade_factors.iloc[-1]['signal'] > 0 and (ubmi - ubmi_before) > 10:
+    elif trade_factors.iloc[-1]['signal'] > 0 and ((ubmi - ubmi_before) > 15 and ubmi > 50):
         if (((trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.5)
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
             ) and (trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal'] or trade_factors.iloc[-4]['macd']  < trade_factors.iloc[-4]['signal']
