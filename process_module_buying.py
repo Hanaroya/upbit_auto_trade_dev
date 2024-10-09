@@ -87,7 +87,7 @@ def coin_receive_buying(c_rank):
                         'rsi_K': round(trade_factors.iloc[-1]['rsi_K'], 2),
                         'rsi_D': round(trade_factors.iloc[-1]['rsi_D'], 2),
                         'case1_chk': chk1,
-                        'case2_chk': chk2,
+                        'case2_chk': chk2,                        
                     }
                 
                 if t_coin['hold'] == False: 
@@ -160,15 +160,15 @@ def macd_check(trade_factors):
 def case2_check(trade_factors):
      # 과매수 진입전 상승세 확인 장치
     if trade_factors.iloc[-1]['signal'] < 0:
-        if (((trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd']
+        if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal'] or trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal']
+            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal']
         ):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if (((trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd']
+        if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal'] or trade_factors.iloc[-3]['macd']  < trade_factors.iloc[-3]['signal']
+            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal']
         ):
             return True
     return False
