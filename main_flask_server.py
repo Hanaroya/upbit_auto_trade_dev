@@ -274,7 +274,6 @@ def ubmi_check():
 
 @scheduler.task('cron', id='up_down_check', coalesce=False, max_instances=1, minute='*/5')
 def up_down_check():
-    
     conn, curs = comnQueryStrt()
     try: 
         coin_data = comnQuerySel(curs, conn,"SELECT * FROM coin_holding")
