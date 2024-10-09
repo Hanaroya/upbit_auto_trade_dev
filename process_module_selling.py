@@ -221,7 +221,7 @@ def coin_receive_user_selling():
         comnQueryCls(curs, conn)
 
 def case1_check(up_chk_b, rsi_S, ubmi, ubmi_before): # 최상의 경우를 염두하고 작성한 케이스 1
-    checker = 0.5
+    checker = 0.3
     if ubmi - ubmi_before < -20: checker = 0.05
     if up_chk_b > checker and rsi_S == 'go':        
         return True
@@ -229,7 +229,7 @@ def case1_check(up_chk_b, rsi_S, ubmi, ubmi_before): # 최상의 경우를 염�
 
 # 케이스2의 경우 많이 겹치는 부분이 많기 때문에 일정 퍼센트 이상 이익이 날 경우만 통과
 def case2_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차상의 경우 혹은 몇몇 조건이 불충분한데 이익이 날 경우 
-    checker = 0.5
+    checker = 0.3
     if ubmi - ubmi_before < -20: checker = 0.05
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은데 가격이 높을 경우
@@ -407,7 +407,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     # if (change_ubmi_before != None and (change_ubmi_now - change_ubmi_before) < -80 and dt.hour != 9 and change_ubmi_now < -50): # UBMI 지수가 저번 지수보다 -80 이상 갑자기 급락하고 현재 지수가 -50 이하일 경우
     #     if up_chk_b > 0.05: t_record['position'] = 'reach profit point 4 UBMI drop -80'
     #     else: t_record['position'] = 'emergency 4 UBMI drop -80'
-    checker = 0.5
+    checker = 0.3
     if ubmi < -50: checker = 0.05
     elif ubmi > 50: checker = 0.8
     elif ubmi - ubmi_before < -20: checker = 0.05
