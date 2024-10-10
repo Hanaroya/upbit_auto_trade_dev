@@ -328,8 +328,19 @@ def selling_process_user(c_list, t_record, total_am:float, user_call:bool, curs,
             op -= remain
             op = op / 22
             # 판매 메세지 변경
-            if user_call == True: mes = "User ask for Sell" # 사용자 신청
-            else: mes = '이상 발생'
+            if user_call == True: 
+                if up_chk_b < 0:
+                    # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
+                    # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
+                    add_to_blacklist(t_record['c_code'], 15, curs, conn)
+                elif up_chk_b > 0:
+                    # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
+                    # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 2분 지나면 블랙리스트에서 삭제하는 코드 생성
+                    add_to_blacklist(t_record['c_code'], 2, curs, conn)
+                mes = "User ask for Sell" # 사용자 신청
+            else: 
+                mes = '이상 발생'
+                add_to_blacklist(t_record['c_code'], 15, curs, conn)
             
             if (user_call == 1):
                 if user_call == True: t_record['record']['strategy'] = 'case U S ' + t_record['record']['strategy']
@@ -460,7 +471,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
             op -= remain
             op = op / 22
             # 판매 메세지 변경
-            if str(t_record['position']).find('reach profit point') > -1: mes="매도 고점 도달"
+            if str(t_record['position']).find('reach profit point') > -1: 
+                mes="매도 고점 도달"
+                add_to_blacklist(t_record['c_code'], 2, curs, conn)
             elif str(t_record['position']).find('emergency') > -1: 
                 if up_chk_b < 0:
                     # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
@@ -472,7 +485,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
                     # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 2분 지나면 블랙리스트에서 삭제하는 코드 생성
                     add_to_blacklist(t_record['c_code'], 2, curs, conn)
                     mes = "매도 고점 도달"
-            else: mes = '이상 발생'
+            else: 
+                mes = '이상 발생'
+                add_to_blacklist(t_record['c_code'], 15, curs, conn)
             
             if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
                 if case1_chk == True: t_record['record']['strategy'] = 'case 1 S ' + t_record['record']['strategy']
