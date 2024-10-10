@@ -395,7 +395,8 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     case1_chk, case2_chk, case3_chk = False, False, False
     if (case1_check(ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True)): 
         case1_chk, t_record['position'] = True, 'reach profit point case 1'
-    if (case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and (t_record['hold'] == True)):
+    if (t_record['record']['rsi_S'] not in ['ready', 'go']
+        ) and case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and t_record['hold'] == True:
         case2_chk, t_record['position'] = True, 'reach profit point case 2'
     if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True)):
         if up_chk_b > 0.05: 
