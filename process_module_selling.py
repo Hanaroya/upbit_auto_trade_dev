@@ -121,7 +121,6 @@ def coin_receive_user_selling():
     tm.trade_strt()
     global s_flag, simulate
     t_coin = None
-    user_call = False
     # while True:
     try:
         dt = datetime.datetime.now()
@@ -140,12 +139,13 @@ def coin_receive_user_selling():
         total_am = round(comnQuerySel(curs, conn,"SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88)
 
         for i in sql_result:
+            user_call = False
             try:
-                user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code']))[0]['user_call'] 
+                user_call = comnQuerySel(curs, conn,"SELECT user_call FROM coin_holding WHERE c_code='{}'".format(i['c_code']))[0]['user_call'] 
                 t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(i['c_code']))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
             except: t_coin = None
 
-            if user_call == True and t_coin != None:
+            if t_coin != None:
                 trade_factors, sma200, close_base = tm.get_all_factors(t_coin['c_code'], 15)
                 strategy, rsi_S = None, 'standby'
                 if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
@@ -382,11 +382,11 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     # 만약 UBMI 지수가 -10 이하일 경우 limit_sell 를 써서 해당 가격에 판매 요청을 한다, 
     # 포지션이 selling 일 경우 오더 채크로 해당 주문이 완료 되었는지 확인한다. 
     case1_chk, case2_chk, case3_chk = False, False, False
-    if (case1_check(ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True and case2_chk == False and case3_chk == False)): 
+    if (case1_check(ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True)): 
         case1_chk, t_record['position'] = True, 'reach profit point case 1'
-    if (case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and (t_record['hold'] == True and case1_chk == False and case3_chk == False)):
+    if (case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and (t_record['hold'] == True)):
         case2_chk, t_record['position'] = True, 'reach profit point case 2'
-    if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True and case2_chk == False and case1_chk == False)):
+    if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True)):
         if up_chk_b > 0.05: 
             t_record['position'] = 'reach profit point case 3'
         elif up_chk_b < -2.75: 
