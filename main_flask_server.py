@@ -283,7 +283,7 @@ def up_down_check():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='19-23', minute='*/5')
+@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, hour='11-23', minute='*/5')
 def regular_buying_hour1():
     conn, curs = comnQueryStrt()
     try: 

@@ -421,9 +421,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     # if (change_ubmi_before != None and (change_ubmi_now - change_ubmi_before) < -80 and dt.hour != 9 and change_ubmi_now < -50): # UBMI 지수가 저번 지수보다 -80 이상 갑자기 급락하고 현재 지수가 -50 이하일 경우
     #     if up_chk_b > 0.05: t_record['position'] = 'reach profit point 4 UBMI drop -80'
     #     else: t_record['position'] = 'emergency 4 UBMI drop -80'
-    checker = 0.3
-    if ubmi < -50: checker = 0.05
-    elif ubmi > 50: checker = 0.8
+    checker = -0.3
+    if ubmi < -50: checker = -0.05
+    elif ubmi > 50: checker = -0.8
     elif ubmi - ubmi_before < -20: checker = 0.05
     
     if up_chk_b < -2.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
