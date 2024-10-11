@@ -4,12 +4,8 @@ import upbit_call_module as up
 import message_module as mp
 import trade_module as tm
 import time as t
-import random
 import traceback
 import logging
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 
 from comn import comnQueryStrt, sqlTextBuilder, comnQueryWrk, comnQuerySel, comnQueryCls
 
@@ -162,13 +158,13 @@ def case2_check(trade_factors):
     if trade_factors.iloc[-1]['signal'] < 0:
         if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal']
+            ) and (macd_check(trade_factors=trade_factors) == True
         ):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
         if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['macd']  < trade_factors.iloc[-2]['signal']
+            ) and (macd_check(trade_factors=trade_factors) == True
         ):
             return True
     return False
