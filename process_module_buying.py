@@ -156,15 +156,15 @@ def macd_check(trade_factors):
 def case2_check(trade_factors):
      # 과매수 진입전 상승세 확인 장치
     if trade_factors.iloc[-1]['signal'] < 0:
-        if (((trade_factors.iloc[-1]['signal'] * 0.9) < trade_factors.iloc[-1]['macd']
+        if (((trade_factors.iloc[-1]['signal'] * 0.6) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (macd_check(trade_factors=trade_factors) == True
+            ) and (trade_factors.iloc[-2]['signal'] * 1.2) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.8
         ):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if (((trade_factors.iloc[-1]['signal'] * 1.1) < trade_factors.iloc[-1]['macd']
+        if (((trade_factors.iloc[-1]['signal'] * 1.4) < trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (macd_check(trade_factors=trade_factors) == True
+            ) and (trade_factors.iloc[-2]['signal'] * 0.8) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.2
         ):
             return True
     return False
