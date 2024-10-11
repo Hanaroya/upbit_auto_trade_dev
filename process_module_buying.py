@@ -148,7 +148,7 @@ def macd_check(trade_factors):
     if trade_factors.iloc[-1]['signal'] < 0: 
         if (trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8):
             return True
-    elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 확인 장치
+    elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 후 복구 되는지 확인하는 모듈
         if (trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2):
             return True                    
     return False
@@ -156,15 +156,15 @@ def macd_check(trade_factors):
 def case2_check(trade_factors):
      # 과매수 진입전 상승세 확인 장치
     if trade_factors.iloc[-1]['signal'] < 0:
-        if (((trade_factors.iloc[-1]['signal'] * 0.6) < trade_factors.iloc[-1]['macd']
-                ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['signal'] * 1.2) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.8
+        if ((trade_factors.iloc[-1]['signal'] * 0.6) < trade_factors.iloc[-1]['macd']
+            ) and ((trade_factors.iloc[-2]['signal'] * 1.2) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.8
+                ) or (trade_factors.iloc[-3]['signal'] * 1.2) < trade_factors.iloc[-3]['macd'] < (trade_factors.iloc[-3]['signal'] * 0.8)
         ):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if (((trade_factors.iloc[-1]['signal'] * 1.4) < trade_factors.iloc[-1]['macd']
-                ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd'])
-            ) and (trade_factors.iloc[-2]['signal'] * 0.8) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.2
+        if ((trade_factors.iloc[-1]['signal'] * 1.4) < trade_factors.iloc[-1]['macd']
+            ) and ((trade_factors.iloc[-2]['signal'] * 0.8) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.2
+                ) or (trade_factors.iloc[-3]['signal'] * 0.8) < trade_factors.iloc[-3]['macd'] < (trade_factors.iloc[-3]['signal'] * 1.2)
         ):
             return True
     return False
@@ -214,12 +214,12 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if case2_chk:
         t_record['record']['case2_chk'] = cp
 
+    if cp > t_record['record']['case1_chk']: t_record['record']['case1_chk'] = 0
+    if cp < t_record['record']['case2_chk']: t_record['record']['case2_chk'] = 0
+
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp < t_record['record']['case1_chk'] and macd_check(trade_factors=trade_factors)
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp > t_record['record']['case2_chk']
     condition3 = t_record['position'] in checking[1:]
-    
-    if cp > t_record['record']['case1_chk']: t_record['record']['case1_chk'] = 0
-    if cp < t_record['record']['case2_chk']: t_record['record']['case2_chk'] = 0
 
     if condition1 or condition2 or condition3:
         try:
