@@ -90,7 +90,7 @@ def every_1_hour(): # 1시간 마다 call해야하는 모듈 전부 여기에서
     total_profit = 0
     if dp_earn != None: total_profit = dp_earn / or_am * 100
     
-    tp = "HOURLY profit\nTotal Investment: W {}\nPercentage: {}%\nProfit: W {}\nSaving Amount: W {}\nSaving loss: W {}".format(or_am, format(total_profit, ".3f"),dp_earn, sv_or, sv_am) # 메세지 전달
+    tp = "---------------------------------\nHOURLY profit\nTotal Investment: W {}\nPercentage: {}%\nProfit: W {}\nSaving Amount: W {}\nSaving loss: W {}\n---------------------------------".format(or_am, format(total_profit, ".3f"),dp_earn, sv_or, sv_am) # 메세지 전달
     dt = pd.DataFrame(coin_holding)
     if len(dt) == 0:
         dt = ""
@@ -102,12 +102,9 @@ def every_1_hour(): # 1시간 마다 call해야하는 모듈 전부 여기에서
     try:comnQueryWrk(curs, conn, "INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", "HOURLY_REPORT",'REPORT', '', str(tabulate(dt, headers=dt.columns, floatfmt=".2f"),now)))
     except:comnQueryWrk(curs, conn, "INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", "HOURLY_REPORT",'REPORT', "", '',now))
     comnQueryWrk(curs, conn, "INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", "HOURLY_REPORT",'REPORT', "", '---------------------------------',now))
-    mm.post_message("#auto-trade", "---------------------------------")
     mm.post_message("#auto-trade", tp)
-    mm.post_message("#auto-trade", "---------------------------------")
     try: mm.post_message("#auto-trade", tabulate(dt, headers=dt.columns, floatfmt=".2f"))
     except: mm.post_message("#auto-trade", tabulate(dt, headers="", floatfmt=".2f"))
-    mm.post_message("#auto-trade", "---------------------------------")
     comnQueryCls(curs, conn)
 
 def server_ask_close():
