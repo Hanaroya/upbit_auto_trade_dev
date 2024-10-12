@@ -82,7 +82,7 @@ def every_1_hour(): # 1시간 마다 call해야하는 모듈 전부 여기에서
     # 1시간 마다 수익 퍼센트, 수익금, 보험금액에서 얼마 줄었는지 표시
     conn, curs = comnQueryStrt()
     dp_earn = comnQuerySel(curs, conn, "SELECT pr_am FROM deposit_holding WHERE coin_key=1")[0]['pr_am']
-    coin_holding = comnQuerySel(curs, conn, "SELECT c_code, current_price, price_b, current_percent, round(deposit+deposit*(current_percent/100)) AS deposit FROM coin_holding")
+    coin_holding = comnQuerySel(curs, conn, "SELECT c_code, current_price, price_b, current_percent, round(deposit+deposit*(current_percent/100)) AS deposit FROM coin_holding ORDER BY current_percent DESC")
     or_am = comnQuerySel(curs, conn, "SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am']
     sv_am = comnQuerySel(curs, conn, "SELECT sv_am from deposit_holding WHERE coin_key=1")[0]['sv_am']
     remain = (round(or_am * 0.88) % 11) 
