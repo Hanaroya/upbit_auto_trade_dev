@@ -428,7 +428,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     
     if up_chk_b < -2.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 5 -1% check'
-    if up_chk_b < checker and ubmi - ubmi_before < -50 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
+    if up_chk_b < checker and ubmi - ubmi_before < -50 and dt.hour != 9 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 6 {}% check'.format(checker)
     info = {
         'sell_uuid': '', 

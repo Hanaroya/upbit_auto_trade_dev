@@ -157,15 +157,11 @@ def case2_check(trade_factors):
      # 과매수 진입전 상승세 확인 장치
     if trade_factors.iloc[-1]['signal'] < 0:
         if ((trade_factors.iloc[-1]['signal'] * 0.6) < trade_factors.iloc[-1]['macd']
-            ) and ((trade_factors.iloc[-2]['signal'] * 1.2) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.8
-                ) or (trade_factors.iloc[-3]['signal'] * 1.2) < trade_factors.iloc[-3]['macd'] < (trade_factors.iloc[-3]['signal'] * 0.8)
-        ):
+            ) and (trade_factors.iloc[-2]['signal'] * 1.03) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.9):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['signal'] * 1.4) < trade_factors.iloc[-1]['macd']
-            ) and ((trade_factors.iloc[-2]['signal'] * 0.8) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.2
-                ) or (trade_factors.iloc[-3]['signal'] * 0.8) < trade_factors.iloc[-3]['macd'] < (trade_factors.iloc[-3]['signal'] * 1.2)
-        ):
+            ) and (trade_factors.iloc[-2]['signal'] * 0.97) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.1):
             return True
     return False
 
