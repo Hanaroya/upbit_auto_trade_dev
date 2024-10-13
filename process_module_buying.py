@@ -135,12 +135,12 @@ def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하�
     if trade_factors.iloc[-1]['signal'] < 0: 
         if ((trade_factors.iloc[-1]['signal'] * 1.5) > (trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
-        ) or (trade_factors.iloc[-1]['rsi_D'] > trade_factors.iloc[-1]['rsi_K'] + checker):
+        ) and (20 + checker > trade_factors.iloc[-1]['rsi_D'] > trade_factors.iloc[-1]['rsi_K'] + checker):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 확인 장치
         if (((trade_factors.iloc[-1]['signal'] / 1.5) > trade_factors.iloc[-1]['macd']
              ) and (trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
-        ) or (trade_factors.iloc[-1]['rsi_D'] > trade_factors.iloc[-1]['rsi_K'] + checker ):
+        ) and (20 + checker > trade_factors.iloc[-1]['rsi_D'] > trade_factors.iloc[-1]['rsi_K'] + checker ):
             return True
     return False
 
