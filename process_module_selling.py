@@ -401,21 +401,21 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True)):
         if up_chk_b > 0.05: 
             t_record['position'] = 'reach profit point case 3'
-        elif up_chk_b < -2.75: 
+        elif up_chk_b < -1.75: 
             t_record['position'] = 'emergency case 3'
         case3_chk = True
     if t_record['r_holding'] == 0 and simulate == False: 'emergency real coin sold'
     if c_list.iloc[-1]['signal'] > 0:
         if (c_list.iloc[-1]['macd'] <= (c_list.iloc[-1]['signal'] * 0.95)
             ) and (t_record['hold'] == True
-            ) and (up_chk_b < -2.7): 
+            ) and (up_chk_b < -1.75): 
             t_record['position'] = 'emergency 1 -3% check'
     if c_list.iloc[-1]['signal'] < 0:
         if (c_list.iloc[-1]['macd'] <= (c_list.iloc[-1]['signal'] * 1.05)
             ) and (t_record['hold'] == True
-            ) and (up_chk_b < -2.75): 
+            ) and (up_chk_b < -1.75): 
             t_record['position'] = 'emergency 2 -3% check'
-    if sma200.iloc[-1]['sma10'] < sma200.iloc[-1]['sma20'] and sma_check(trade_factors=sma200) == False and (up_chk_b < -2.95): 
+    if sma200.iloc[-1]['sma10'] < sma200.iloc[-1]['sma20'] and sma_check(trade_factors=sma200) == False and (up_chk_b < -1.95): 
         t_record['position'] = 'emergency 3 sudden drop' # 갑작스럽게 내릴 경우 1
         
     # if (change_ubmi_before != None and (change_ubmi_now - change_ubmi_before) < -80 and dt.hour != 9 and change_ubmi_now < -50): # UBMI 지수가 저번 지수보다 -80 이상 갑자기 급락하고 현재 지수가 -50 이하일 경우
@@ -426,7 +426,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     elif ubmi > 50: checker = -0.8
     elif ubmi - ubmi_before < -20: checker = 0.05
     
-    if up_chk_b < -2.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
+    if up_chk_b < -1.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 5 -1% check'
     if up_chk_b < checker and ubmi - ubmi_before < -50 and dt.hour != 9 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 6 {}% check'.format(checker)
