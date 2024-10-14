@@ -283,10 +283,10 @@ def check_portfolio_balance(curs, conn):
         elif profit < -0.05:
             losing_coins.append((coin['c_code'], profit))
     
-    return total_profit, losing_coins, winning_coins, trade_factors
+    return total_profit, losing_coins, winning_coins
 
 def sell_balanced_portfolio(total_am, curs, conn):
-    total_profit, losing_coins, winning_coins, trade_factors = check_portfolio_balance(curs, conn)
+    total_profit, losing_coins, winning_coins = check_portfolio_balance(curs, conn)
     
     if total_profit <= 0:
         return  # 전체 포트폴리오가 손실 상태면 판매하지 않음
@@ -297,6 +297,7 @@ def sell_balanced_portfolio(total_am, curs, conn):
         # 이익이 손실을 커버할 수 있는 경우
         for coin, _ in losing_coins + winning_coins:
             t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(coin))[0]
+            trade_factors, sma200, close_base = tm.get_all_factors(coin=coin, min=15)
             if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
                 t_coin['record'] = json.loads(t_coin['record'])
             sell_coin(c_list=trade_factors, t_record=t_coin, total_am=total_am, curs=curs, conn=conn)
@@ -315,8 +316,6 @@ def sell_coin(c_list, t_record, total_am, curs, conn):
     dt = datetime.datetime.now()
     dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
     global simulate, s_flag
-    ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
-    ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
     total_profit = comnQuerySel(curs, conn,"SELECT (pr_am - (or_am * 0.12 - sv_am)) as pr_am FROM deposit_holding WHERE coin_key=1")[0]['pr_am'] # 수익금 확인
     if type(total_profit) != float or total_profit < 0: total_profit = 0
     cp = float(c_list.iloc[-1]['close'])
