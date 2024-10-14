@@ -22,21 +22,20 @@ def coin_receive_regular_selling():
     try:
         dt = datetime.datetime.now()
         conn, curs = comnQueryStrt() # SQL 서버 접속
+        total_am = round(comnQuerySel(curs, conn,"SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88)
+        sell_balanced_portfolio(total_am, curs, conn)
+        
         limit_flag = comnQuerySel(curs, conn,"SELECT * FROM trade_rules WHERE coin_key=1")[0] # 각 멀티 프로세스별 제한 상태 받아오기
         # trading_list = comnQuerySel(curs, conn,"SELECT * FROM trading_list WHERE coin_key=1")[0] # 각 멀티 프로세스별 접속 코인 리스트 받아오기
         sql_result = comnQuerySel(curs, conn,"SELECT c_code FROM coin_list_selling") # 판매 테이블에 있는 것만 따로 불러오기
 
         if len(sql_result) == 0: # 구매 완료된 코인이 없을 경우 5초 마다 확인
             return
-            # continue
         
         s_flag = limit_flag['s_limit'] # 판매 제한 확인하기
         
         simulate = limit_flag['simulate']
-        total_am = round(comnQuerySel(curs, conn,"SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88)
-        
-        sell_balanced_portfolio(total_am, curs, conn) # 시작전 모집된 코인의 벨런스 조절하는 파트
-        
+         # 시작전 모집된 코인의 벨런스 조절하는 파트
         for i in sql_result:
             try: t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(i['c_code']))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
             except: t_coin = None
@@ -278,10 +277,10 @@ def check_portfolio_balance(curs, conn):
         cp = float(trade_factors.iloc[-1]['close'])
         profit = -0.05 + ((float(cp) - coin['price_b']) / coin['price_b']) * 100
         
-        if profit > 0.5:
+        if profit > 0.05:
             winning_coins.append((coin['c_code'], profit))
             total_profit += profit
-        else:
+        elif profit < -0.05:
             losing_coins.append((coin['c_code'], profit))
     
     return total_profit, losing_coins, winning_coins, trade_factors
@@ -294,11 +293,22 @@ def sell_balanced_portfolio(total_am, curs, conn):
     
     total_loss = sum(loss for _, loss in losing_coins)
     
-    if total_profit > abs(total_loss):
+    if total_profit > abs(total_loss) and len(losing_coins) > 0:
         # 이익이 손실을 커버할 수 있는 경우
         for coin, _ in losing_coins + winning_coins:
             t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(coin))[0]
+            if t_coin['record'] != 'NULL' and t_coin['record'] != None: 
+                t_coin['record'] = json.loads(t_coin['record'])
             sell_coin(c_list=trade_factors, t_record=t_coin, total_am=total_am, curs=curs, conn=conn)
+            sql_coin = t_coin
+            sql_coin['record'] = json.dumps(t_coin['record']) # 거래기록을 DB에 저장
+            if sql_coin['hold'] == True and str(t_coin['record']).find('B') < 0 and t_coin['r_holding'] == 0: 
+                comnQueryWrk(curs, conn,"UPDATE coin_list SET hold=0,price_b=NULL,deposit=0,position='holding',buy_uuid='' WHERE c_code='{}'".format(t_coin['c_code']))
+                t.sleep(0.01)
+                comnQueryWrk(curs, conn,"DELETE FROM coin_list_selling WHERE c_code='{}'".format(t_coin['c_code'])) #판매 리스트에서 제거
+                t.sleep(0.01)
+                comnQueryWrk(curs, conn,"DELETE FROM coin_holding WHERE c_code='{}'".format(t_coin['c_code'])) #코인 보유 리스트에서 제거   
+            del t_coin
 
 def sell_coin(c_list, t_record, total_am, curs, conn):
     mes = ''
