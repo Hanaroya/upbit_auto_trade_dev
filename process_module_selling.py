@@ -278,7 +278,7 @@ def check_portfolio_balance(curs, conn):
         cp = float(trade_factors.iloc[-1]['close'])
         profit = -0.05 + ((float(cp) - coin['price_b']) / coin['price_b']) * 100
         
-        if profit > 0.05:
+        if profit > 0.5:
             winning_coins.append((coin['c_code'], profit))
             total_profit += profit
         else:
