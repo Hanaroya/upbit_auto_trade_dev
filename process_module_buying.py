@@ -198,7 +198,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     # 여기부터 구매 알고리즘 수정 시작
     cp = float(up.price_call(t_record['c_code'])[0]['tradePrice'])
     info = None
-    am_invest = round(total_am/22)
+    am_invest = round(total_am/11)
     deposit = round((am_invest) - (am_invest * 0.0005))
     # 초기화
     case1_chk = case2_chk = False
@@ -226,14 +226,14 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         try:
             t_record['record']['case2_chk'] = 0
             t_record['record']['case1_chk'] = 0
-            if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 16) and (
-                comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/22)*6))):
+            if b_flag == False and ((comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_list_selling")[0]['COUNT(*)'] < 8) and (
+                comnQuerySel(curs, conn,"SELECT dp_am FROM deposit_holding WHERE coin_key=1")[0]['dp_am'] >= ((total_am/11)*3))):
                 mes = ''
                 info = {}
                 if simulate == False: # 시뮬레이션이 아닐때 
                     real_money, real_money_dp, real_money_sv = tm.real_trade_check()
-                    if (real_money / 22) > 5000:
-                        am_invest = round(real_money_dp / 22)
+                    if (real_money / 11) > 5000:
+                        am_invest = round(real_money_dp / 11)
                         deposit = round((am_invest) - (am_invest * 0.0005))
                         if case1_chk == True: # 하락세 감지시
                             info = tm.limit_call_buy(coin=t_record['c_code'], price=cp, amt=deposit)
