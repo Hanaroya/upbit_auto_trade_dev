@@ -293,7 +293,7 @@ def sell_balanced_portfolio(total_am, curs, conn):
     
     total_loss = sum(loss for _, loss in losing_coins)
     
-    if total_profit > abs(total_loss) and len(losing_coins) > 0:
+    if total_profit > (abs(total_loss) + 0.5) and len(losing_coins) > 0:
         # 이익이 손실을 커버할 수 있는 경우
         for coin, _ in losing_coins + winning_coins:
             t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(coin))[0]
