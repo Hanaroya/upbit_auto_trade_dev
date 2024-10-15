@@ -219,7 +219,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if cp < t_record['record']['case2_chk'] * 0.999: t_record['record']['case2_chk'] = 0
 
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp <= t_record['record']['case1_chk'] and macd_check(trade_factors=trade_factors)
-    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp > t_record['record']['case2_chk']
+    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp >= t_record['record']['case2_chk']
     condition3 = t_record['position'] in checking[1:]
 
     if condition1 or condition2 or condition3:
