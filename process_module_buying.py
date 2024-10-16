@@ -146,10 +146,10 @@ def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하�
 
 def macd_check(trade_factors):
     if trade_factors.iloc[-1]['signal'] < 0: 
-        if (trade_factors.iloc[-1]['signal'] * 1.2) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8):
+        if (trade_factors.iloc[-1]['signal'] * 1.3) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 후 복구 되는지 확인하는 모듈
-        if (trade_factors.iloc[-1]['signal'] * 0.8) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2):
+        if (trade_factors.iloc[-1]['signal'] * 0.7) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3):
             return True                    
     return False
 
@@ -214,8 +214,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if case2_chk:
         t_record['record']['case2_chk'] = cp
    
-    condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp <= t_record['record']['case1_chk'] and t_record['rsi'] < 40
-    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 60
+    condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp <= t_record['record']['case1_chk'] and t_record['rsi'] < 50 and macd_check(trade_factors=trade_factors)
+    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 50
     condition3 = t_record['position'] in checking[1:]
 
     if condition1 or condition2 or condition3:
