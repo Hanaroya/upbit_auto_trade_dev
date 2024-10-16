@@ -158,13 +158,13 @@ def case2_check(trade_factors):
     if trade_factors.iloc[-1]['signal'] < 0:
         if ((trade_factors.iloc[-1]['signal'] * 0.85) < trade_factors.iloc[-1]['macd']
             ) and ((trade_factors.iloc[-2]['signal'] * 1.03) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.9)
-            ) and ((trade_factors.iloc[-3]['macd'] * 0.95) < trade_factors.iloc[-2]['macd']
+            # ) and ((trade_factors.iloc[-3]['macd'] * 0.95) < trade_factors.iloc[-2]['macd']
             ):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['signal'] * 1.15) < trade_factors.iloc[-1]['macd']
             ) and ((trade_factors.iloc[-2]['signal'] * 0.97) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.1)
-            ) and ((trade_factors.iloc[-3]['macd'] * 1.05) < trade_factors.iloc[-2]['macd']       
+            # ) and ((trade_factors.iloc[-3]['macd'] * 1.05) < trade_factors.iloc[-2]['macd'] 
             ):
             return True
     return False
