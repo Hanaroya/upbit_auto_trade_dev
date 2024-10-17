@@ -190,12 +190,29 @@ sell_check_lock = threading.Lock()
 def clean_blacklist():
     conn, curs = comnQueryStrt()
     try:
-        now = datetime.datetime.now()
-        timeout = comnQuerySel(conn=conn, curs=curs, sqlText="SELECT c_code, timeout FROM blacklist")
+        timeout = comnQuerySel(conn=conn, curs=curs, sqlText="SELECT c_code FROM blacklist")
         for coin in timeout:
-            timeout_chk = now - datetime.timedelta(minutes=coin['timeout']) # 너무 판매후 즉시 재구매가 나오길래 추가   
-            query = "DELETE FROM blacklist WHERE date < '{}' and c_code='{}'".format(timeout_chk.strftime("%Y-%m-%d %H:%M:%S"), coin['c_code'])
+            query = """
+            UPDATE blacklist SET
+                    timeout = CASE 
+                                WHEN TIMESTAMPDIFF(MINUTE, date, NOW()) >= timeout THEN 0
+                                ELSE timeout
+                            END
+            WHERE c_code ='{}'
+            """.format(coin['c_code'])
             comnQueryWrk(curs=curs, conn=conn, sqlText=query)
+    except pymysql.MySQLError as e:
+        print(f"Error: {e}")
+    finally: comnQueryCls(curs, conn)
+    
+@scheduler.task('cron', id='truncate_blacklist', coalesce=False, max_instances=1, hour='9')
+def truncate_blacklist():
+    conn, curs = comnQueryStrt()
+    try:
+        query = """
+        TRUNCATE TABLE blacklist
+        """
+        comnQueryWrk(curs=curs, conn=conn, sqlText=query)
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)

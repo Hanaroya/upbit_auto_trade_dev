@@ -419,7 +419,8 @@ def sma_check(trade_factors):
 
 def add_to_blacklist(c_code, timeout, curs, conn):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    query = "INSERT INTO blacklist (c_code, date, timeout) VALUES ('{}', '{}', {})".format(c_code, now, timeout)
+    query = """INSERT INTO blacklist (c_code, date, timeout ) VALUES ('{}', '{}', {}) 
+                ON DUPLICATE KEY UPDATE c_code = '{}', out_count = out_count + 1""".format(c_code, now, timeout, c_code)
     comnQueryWrk(curs=curs, conn=conn, sqlText=query)
 
 def selling_process_user(c_list, t_record, total_am:float, user_call:bool, curs, conn): # 가지고 있는 코인 판매 가능 체크

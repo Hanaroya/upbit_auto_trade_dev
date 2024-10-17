@@ -27,7 +27,7 @@ def coin_receive_buying(c_rank):
         coin_list = json.loads(trading_list['coin_pl'])
         
         # 블랙리스트 호출
-        blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist")
+        blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist WHERE timeout > 0 and out_count < 3")
         blacklist_codes = [item['c_code'] for item in blacklist]
         
         t_list = json.loads(trading_list['t_list{}'.format(c_rank)]) # 구매 테이블에 있는 코인 만 불러오기
