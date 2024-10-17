@@ -205,7 +205,7 @@ def clean_blacklist():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)
     
-@scheduler.task('cron', id='truncate_blacklist', coalesce=False, max_instances=1, hour='9')
+@scheduler.task('cron', id='truncate_blacklist', coalesce=False, max_instances=1, hour='8')
 def truncate_blacklist():
     conn, curs = comnQueryStrt()
     try:
