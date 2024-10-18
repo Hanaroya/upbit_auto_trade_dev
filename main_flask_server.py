@@ -275,7 +275,7 @@ def daily_report_chk():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='ubmi_check', coalesce=False, max_instances=1, hour='13-23', minute='*/5')
+@scheduler.task('cron', id='ubmi_check', coalesce=False, max_instances=1, minute='*/5')
 def ubmi_check():
     conn, curs = comnQueryStrt()
     try: 
