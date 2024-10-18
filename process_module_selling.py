@@ -424,7 +424,7 @@ def add_to_blacklist(c_code, timeout, down, curs, conn):
                 ON DUPLICATE KEY UPDATE c_code = '{}', date = '{}', timeout={}, out_count = out_count + 1""".format(c_code, now, timeout, c_code, now, timeout)
     else: 
         query = """INSERT INTO blacklist (c_code, date, timeout ) VALUES ('{}', '{}', {}) 
-                ON DUPLICATE KEY UPDATE c_code = '{}', date = '{}', timeout={}""".format(c_code, now, timeout, c_code, now, timeout)
+                ON DUPLICATE KEY UPDATE c_code = '{}', date = '{}', timeout={}", out_count=out_count""".format(c_code, now, timeout, c_code, now, timeout)
     comnQueryWrk(curs=curs, conn=conn, sqlText=query)
     
 
