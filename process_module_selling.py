@@ -293,7 +293,7 @@ def sell_balanced_portfolio(total_am, curs, conn):
     
     total_loss = sum(loss for _, loss in losing_coins)
     
-    if (total_profit > (abs(total_loss) + 1.5) and len(losing_coins) > 0) or (total_loss < -1.95):
+    if (total_profit > (abs(total_loss) + 0.7) and len(losing_coins) > 0) or (total_loss < -1.95):
         # 이익이 손실을 커버할 수 있는 경우
         for coin, _ in losing_coins + winning_coins:
             t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(coin))[0]
@@ -546,7 +546,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     case1_chk, case2_chk, case3_chk = False, False, False
     if (case1_check(ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b, rsi_S=[t_record['record']['rsi_S']]) == True and (t_record['hold'] == True)): 
         case1_chk, t_record['position'] = True, 'reach profit point case 1'
-    if (t_record['record']['rsi_S'] not in ['ready', 'go']
+    if (t_record['record']['rsi_S'] not in ['ready', 'go'] and str(t_record['record']['strategy']).find('case 1') == -1
         ) and case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and t_record['hold'] == True:
         case2_chk, t_record['position'] = True, 'reach profit point case 2'
     if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True)):
