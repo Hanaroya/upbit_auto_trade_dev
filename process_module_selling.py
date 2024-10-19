@@ -289,7 +289,7 @@ def sell_balanced_portfolio(total_am, curs, conn):
     total_profit, losing_coins, winning_coins = check_portfolio_balance(curs, conn)
     
     total_loss = sum(loss for _, loss in losing_coins)
-    if len(total_loss) == 0: total_loss = 0
+    if len(losing_coins) == 0: total_loss = 0
     
     if (total_profit > (abs(total_loss) + 0.7)) or (total_loss < -1.95):
         # 이익이 손실을 커버할 수 있는 경우
