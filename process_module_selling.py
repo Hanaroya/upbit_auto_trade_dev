@@ -288,10 +288,10 @@ def check_portfolio_balance(curs, conn):
 def sell_balanced_portfolio(total_am, curs, conn):
     total_profit, losing_coins, winning_coins = check_portfolio_balance(curs, conn)
     
-    if total_profit <= 0.05:
-        return  # 전체 포트폴리오가 손실 상태면 판매하지 않음
-    
     total_loss = sum(loss for _, loss in losing_coins)
+    
+    if total_profit <= total_loss:
+        return  # 전체 포트폴리오가 손실 상태면 판매하지 않음
     
     if (total_profit > (abs(total_loss) + 0.7) and len(losing_coins) > 0) or (total_loss < -1.95):
         # 이익이 손실을 커버할 수 있는 경우
