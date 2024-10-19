@@ -206,7 +206,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if t_record['record']['case1_chk'] == 0:
         case1_chk = case1_check(trade_factors=trade_factors, ubmi=ubmi, ubmi_before=ubmi_before)
 
-    if t_record['record']['case2_chk'] == 0 and ubmi - ubmi_before > 20:
+    if t_record['record']['case2_chk'] == 0 and ubmi - ubmi_before > 5:
         case2_chk = case2_check(trade_factors=trade_factors)
 
     if case1_chk:
