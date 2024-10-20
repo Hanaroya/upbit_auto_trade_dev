@@ -162,7 +162,7 @@ def case2_check(trade_factors):
             ):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['signal'] * 1.15) < trade_factors.iloc[-1]['macd']
+        if ((trade_factors.iloc[-1]['signal'] * 1.05) < trade_factors.iloc[-1]['macd']
             ) and ((trade_factors.iloc[-2]['signal'] * 0.97) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.1)
             ) and (trade_factors.iloc[-3]['macd'] < trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']
             ):
@@ -215,7 +215,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case2_chk'] = cp
    
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and cp <= t_record['record']['case1_chk'] and t_record['rsi'] < 50 and macd_check(trade_factors=trade_factors)
-    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 50
+    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 65
     condition3 = t_record['position'] in checking[1:]
 
     if condition1 or condition2 or condition3:
