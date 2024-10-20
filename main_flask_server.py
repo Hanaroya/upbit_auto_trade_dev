@@ -281,10 +281,12 @@ def ubmi_check():
     try: 
         ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
         ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
+        query = ""
         if ubmi < -20 or ubmi - ubmi_before < -5:
-            comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1")
-        elif ubmi > 0 or ubmi - ubmi_before > 5:
-            comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1")
+            query = "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1"
+        if ubmi > 0 or ubmi - ubmi_before > 5:
+            query = "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1"
+        comnQueryWrk(curs, conn, query)
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
