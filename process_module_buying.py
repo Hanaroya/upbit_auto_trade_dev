@@ -129,9 +129,9 @@ def coin_receive_buying(c_rank):
 
 def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하락세 확인 장치 
     checker = 10
-    if ubmi < -50: checker = 15
+    if ubmi < -50: checker = -15
     elif ubmi > 50: checker = 5
-    elif ubmi - ubmi_before < -20: checker = 15
+    elif ubmi - ubmi_before < -5: checker = -15
     if trade_factors.iloc[-1]['signal'] < 0: 
         if ((trade_factors.iloc[-1]['signal'] * 1.5) > (trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-4]['macd'] > trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
