@@ -280,7 +280,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
             
             if condition1 == True: t_record['record']['strategy'] = 'case 1 B ' + t_record['record']['strategy']
             elif condition2 == True: t_record['record']['strategy'] = 'case 2 B ' + t_record['record']['strategy']
-            report = "c_code: " + t_record['c_code'] +"\nc_rank: "+str(c_rank)+"\ncurrent price: "+str(cp)+"\ndate_time: " + str(dt_str) +"\nRSI: "+ str(t_record['rsi']) + "\nDeposit: W {}".format(t_record['deposit']) + "\nPurchased: {}".format(t_record['record']['strategy'])
+            report = "c_code: " + t_record['c_code'] +"\nprocess: BUY" + "\nc_rank: "+str(c_rank)+"\ncurrent price: "+str(cp)+"\ndate_time: " + str(dt_str) +"\nRSI: "+ str(t_record['rsi']) + "\nDeposit: W {}".format(t_record['deposit']) + "\nPurchased: {}".format(t_record['record']['strategy'])
             mp.post_message("#auto-trade", report) #Slack에 메세지 전송
             lst={'c_code': t_record['c_code'], 'c_rank': c_rank, 'current_price': cp, 'percent': -0.05, 'date_time':dt, 
                  'c_status': 'Purchased', 'reason': mes, 'deposit':t_record['deposit']}
