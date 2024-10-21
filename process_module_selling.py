@@ -376,17 +376,12 @@ def sell_coin(c_list, t_record, total_am, curs, conn):
         
         if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
             #이익금 정리
-            if str(t_record['position']).find('emergency') > -1:
-                t_record['record']['strategy'] = 'case E S ' + t_record['record']['strategy']
-                report = "c_code: " + t_record['c_code'] +"\nposition: " + t_record['position'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n손절 포인트 도달\n급매도 요청 발생"
-            elif str(t_record['position']).find('reach profit point') > -1:
-                t_record['record']['strategy'] = 'case 7 S ' + t_record['record']['strategy']
-                report = "c_code: " + t_record['c_code'] +"\nposition: " + t_record['position'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n익절 포인트 도달\n급매도 요청 발생"
-            mp.post_message("#auto-trade", report) #Slack에 메세지 전송
-            comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'SELL', json.dumps(t_record['record']), report,dt))
+            if str(t_record['position']).find('emergency') > -1: t_record['record']['strategy'] = 'case E S ' + t_record['record']['strategy']
+            elif str(t_record['position']).find('reach profit point') > -1: t_record['record']['strategy'] = 'case 7 S ' + t_record['record']['strategy']
+            
             tm.profit_control(total_am=total_am,deposit=deposit) 
             per_deal = format(up_chk_b, ".3f")
-            message = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\nprice_b: "+ str(t_record['price_b'])+"\nprice_s: "+str(cp)+ "\ndate_time: " + str(dt_str) +"\nStrategy: "+ str(t_record['record']['strategy']) + "\nresult: {}%, W {}".format(per_deal, deposit)+"\nSOLD: {}".format(mes)
+            message = "c_code: " + t_record['c_code'] +"\nprocess: SELL" + "\nposition: " + t_record['position'] +"\nprice_b: "+ str(t_record['price_b'])+"\nprice_s: "+str(cp)+ "\ndate_time: " + str(dt_str) +"\nStrategy: "+ str(t_record['record']['strategy']) + "\nresult: {}%, W {}".format(per_deal, deposit)+"\nSOLD: {}".format(mes)
             
             mp.post_message("#auto-trade", message) #Slack에 메세지 전송
             # 결과 DB 전송 
@@ -495,12 +490,9 @@ def selling_process_user(c_list, t_record, total_am:float, user_call:bool, curs,
                 if user_call == True: t_record['record']['strategy'] = 'case U S ' + t_record['record']['strategy']
 
                 #이익금 정리
-                if user_call == True: report = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n사용자 요청 발생\n급매도 요청 발생"
-                mp.post_message("#auto-trade", report) #Slack에 메세지 전송
-                comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'SELL', json.dumps(t_record['record']), report,dt))
                 tm.profit_control(total_am=total_am,deposit=deposit) 
                 per_deal = format(up_chk_b, ".3f")
-                message = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\nprice_b: "+ str(t_record['price_b'])+"\nprice_s: "+str(cp)+ "\ndate_time: " + str(dt_str) +"\nStrategy: "+ str(t_record['record']['strategy']) + "\nresult: {}%, W {}".format(per_deal, deposit)+"\nSOLD: {}".format(mes)
+                message = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\nposition: 사용자 요청 발생"+"\nprice_b: "+ str(t_record['price_b'])+"\nprice_s: "+str(cp)+ "\ndate_time: " + str(dt_str) +"\nStrategy: "+ str(t_record['record']['strategy']) + "\nresult: {}%, W {}".format(per_deal, deposit)+"\nSOLD: {}".format(mes)
                 
                 mp.post_message("#auto-trade", message) #Slack에 메세지 전송
                 # 결과 DB 전송 
@@ -644,15 +636,9 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
                 elif user_call == True: t_record['record']['strategy'] = 'case U S ' + t_record['record']['strategy']
 
                 #이익금 정리
-                if str(t_record['position']).find('emergency') > -1:
-                    report = "c_code: " + t_record['c_code'] +"\nposition: " + t_record['position'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n손절 포인트 도달\n급매도 요청 발생"
-                elif str(t_record['position']).find('reach profit point') > -1:
-                    report = "c_code: " + t_record['c_code'] +"\nposition: " + t_record['position'] +"\nprocess: SELL"+"\ncurrent price: "+str(cp) + "\n익절 포인트 도달\n급매도 요청 발생"
-                mp.post_message("#auto-trade", report) #Slack에 메세지 전송
-                comnQueryWrk(curs, conn,"INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", t_record['c_code'],'SELL', json.dumps(t_record['record']), report,dt))
                 tm.profit_control(total_am=total_am,deposit=deposit) 
                 per_deal = format(up_chk_b, ".3f")
-                message = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\nprice_b: "+ str(t_record['price_b'])+"\nprice_s: "+str(cp)+ "\ndate_time: " + str(dt_str) +"\nStrategy: "+ str(t_record['record']['strategy']) + "\nresult: {}%, W {}".format(per_deal, deposit)+"\nSOLD: {}".format(mes)
+                message = "c_code: " + t_record['c_code'] +"\nprocess: SELL"+"\nposition: " + t_record['position']+"\nprice_b: "+ str(t_record['price_b'])+"\nprice_s: "+str(cp)+ "\ndate_time: " + str(dt_str) +"\nStrategy: "+ str(t_record['record']['strategy']) + "\nresult: {}%, W {}".format(per_deal, deposit)+"\nSOLD: {}".format(mes)
                 
                 mp.post_message("#auto-trade", message) #Slack에 메세지 전송
                 # 결과 DB 전송 

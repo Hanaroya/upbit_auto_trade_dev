@@ -258,8 +258,6 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
                 except: pass
                 t_record['volume'] = info['volume']
                 t_record['buy_uuid'] = info['uuid']
-                report = "c_code: " + t_record['c_code'] +"\nc_rank: "+str(c_rank)+"\ncurrent price: "+str(t_record['price_b'])+"\ndate_time: "+ str(dt_str) + "\nDeposit: W {}".format(t_record['deposit']) + mes
-                mp.post_message("#auto-trade", report) #Slack에 메세지 전송
                 comnQueryWrk(curs, conn,"UPDATE coin_list SET volume={}, buy_uuid='{}' WHERE c_code='{}'".format(info['volume'], info['uuid'], t_record['c_code']))  
             else: info = None
         
