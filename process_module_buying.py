@@ -146,10 +146,10 @@ def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하�
 
 def macd_check(trade_factors):
     if trade_factors.iloc[-1]['signal'] < 0: 
-        if (trade_factors.iloc[-1]['signal'] * 1.3) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.7):
+        if (trade_factors.iloc[-1]['signal'] * 1.05) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.95):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 후 복구 되는지 확인하는 모듈
-        if (trade_factors.iloc[-1]['signal'] * 0.7) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.3):
+        if (trade_factors.iloc[-1]['signal'] * 0.95) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.05):
             return True                    
     return False
 
