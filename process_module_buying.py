@@ -128,7 +128,7 @@ def coin_receive_buying(c_rank):
         comnQueryCls(curs, conn)
 
 def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하락세 확인 장치 
-    checker = 10
+    checker = -10
     if ubmi < -50: checker = -15
     elif ubmi > 50: checker = 5
     elif ubmi - ubmi_before < -5: checker = -15
