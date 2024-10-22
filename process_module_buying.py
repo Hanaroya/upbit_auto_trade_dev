@@ -126,12 +126,12 @@ def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하�
     elif ubmi > 50: checker = 5
     elif ubmi - ubmi_before < -5: checker = -15
     if trade_factors.iloc[-1]['signal'] < 0: 
-        if ((trade_factors.iloc[-1]['signal'] * 1.5) > (trade_factors.iloc[-1]['macd']
+        if ((trade_factors.iloc[-1]['signal'] * 1.3) > (trade_factors.iloc[-1]['macd']
                 ) and (trade_factors.iloc[-4]['macd'] > trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
         ) and (20 + checker > trade_factors.iloc[-1]['rsi_D']  and 20 + checker > trade_factors.iloc[-1]['rsi_K']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 확인 장치
-        if (((trade_factors.iloc[-1]['signal'] / 1.5) > trade_factors.iloc[-1]['macd']
+        if (((trade_factors.iloc[-1]['signal'] / 1.3) > trade_factors.iloc[-1]['macd']
              ) and (trade_factors.iloc[-4]['macd'] > trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
         ) and (20 + checker > trade_factors.iloc[-1]['rsi_D']  and 20 + checker > trade_factors.iloc[-1]['rsi_K']):
             return True
@@ -209,7 +209,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     if t_record['record']['case1_chk'] > 0 and cp < (t_record['record']['case1_chk'] * 0.999): t_record['record']['case1_chk'] = cp
    
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and (
-        40 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 30 and cp > t_record['record']['case2_chk'])
+        40 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 30 and cp > t_record['record']['case1_chk'])
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and (
         90 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 50 and cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 65)
     condition3 = t_record['position'] in checking[1:]
