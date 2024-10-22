@@ -213,6 +213,7 @@ def daily_report():
 def five_min_ubmi_update():
     conn, curs = comnQueryStrt()
     change_ubmi_before = comnQuerySel(curs, conn, "SELECT change_ubmi_now FROM trading_list WHERE coin_key=1")[0]['change_ubmi_now']
+    time.sleep(10)
     total_ubmi, change_ubmi_now, fear_greed = ub.ubmi_call()
     if total_ubmi != None and change_ubmi_now != None and fear_greed != None:
         comnQueryWrk(curs, conn, "UPDATE trading_list SET total_ubmi={} WHERE coin_key= 1".format(total_ubmi))
