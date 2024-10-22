@@ -237,6 +237,7 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차상의 
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10'] # 이동평균선 20이 10보다 클 경우
+            ) or (trade_factors.iloc[-1]['rsi'] > 70
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
                 trade_factors.iloc[-1]['rsi_K'] < 75 and trade_factors.iloc[-1]['rsi_D'] < 55))
             # 저번 회차의 최대값보다 현재 값이 높은데 rsi_K 값이 75 이하 일 경우 
@@ -246,6 +247,7 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차상의 
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10']
+            ) or (trade_factors.iloc[-1]['rsi'] > 70
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
                 trade_factors.iloc[-1]['rsi_K'] < 80 and trade_factors.iloc[-1]['rsi_D'] < 50))
             ): return True
@@ -270,6 +272,7 @@ def case4_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차악의 
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10'] # 이동평균선 20이 10보다 클 경우
+            ) or (trade_factors.iloc[-1]['rsi'] < 45
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
                 trade_factors.iloc[-1]['rsi_K'] < 75 and trade_factors.iloc[-1]['rsi_D'] < 55))
             # 저번 회차의 최대값보다 현재 값이 높은데 rsi_K 값이 75 이하 일 경우 
@@ -279,6 +282,7 @@ def case4_check(trade_factors,sma200, up_chk_b, ubmi, ubmi_before): # 차악의 
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10']
+            ) or (trade_factors.iloc[-1]['rsi'] < 45
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
                 trade_factors.iloc[-1]['rsi_K'] < 80 and trade_factors.iloc[-1]['rsi_D'] < 50))
             ): return True
@@ -559,11 +563,12 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     if (t_record['record']['rsi_S'] not in ['ready', 'go']
         ) and case2_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True and t_record['hold'] == True:
         case2_chk, t_record['position'] = True, 'reach profit point case 2'
-    if (case3_check(trade_factors=c_list) == True and (t_record['hold'] == True)) or (
-        case4_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True):
+    if (case3_check(trade_factors=c_list) == True or (
+        case4_check(trade_factors=c_list, sma200=sma200, ubmi=ubmi, ubmi_before=ubmi_before, up_chk_b=up_chk_b) == True)) and (
+            t_record['hold'] == True):
         if up_chk_b > 0.05: 
             t_record['position'] = 'reach profit point case 3'
-        elif up_chk_b < -1.75: 
+        elif up_chk_b < -0.05: 
             t_record['position'] = 'emergency case 3'
         case3_chk = True
     if t_record['r_holding'] == 0 and simulate == False: 'emergency real coin sold'
