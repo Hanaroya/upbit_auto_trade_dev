@@ -110,9 +110,9 @@ def buying_process(rank):
         wait_30 = comnQuerySel(curs, conn,"SELECT 30min_update_chk FROM trade_rules WHERE coin_key=1")[0]['30min_update_chk']
         st = comnQuerySel(curs, conn,"SELECT running FROM trade_rules WHERE coin_key=1")[0]['running']
         tt = comnQuerySel(curs, conn,"SELECT terminate FROM trade_rules WHERE coin_key=1")[0]['terminate']
-        lb = comnQuerySel(curs, conn,"SELECT b_limit FROM trade_rules WHERE coin_key=1")[0]['b_limit']
+        # lb = comnQuerySel(curs, conn,"SELECT b_limit FROM trade_rules WHERE coin_key=1")[0]['b_limit']
         run_chk = comnQuerySel(curs, conn,"SELECT {} FROM trading_list WHERE coin_key=1".format(t_list_chk))[0]['{}'.format(t_list_chk)]
-        if st == True and lb == False and tt == False and wait_30 == True and coin_count > 60 and run_chk == False:
+        if st == True and tt == False and wait_30 == True and coin_count > 60 and run_chk == False:
             mb.coin_receive_buying(c_rank=rank)
     except pymysql.MySQLError as e:
         print(f"Error: {e}")

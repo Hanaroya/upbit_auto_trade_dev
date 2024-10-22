@@ -35,14 +35,7 @@ def coin_receive_buying(c_rank):
         comnQueryWrk(curs, conn,"UPDATE trading_list SET t_list_chk{}={} WHERE coin_key= 1".format(c_rank,True))
         
         b_flag = False # 구매 제한 확인하기
-        b_flag = limit_flag['b_limit{}'.format(c_rank)]
-        
-        if limit_flag['b_limit'] == False: # 구매 제한이 걸린 경우 구매 프로세스 중단
-            b_flag = False
-            comnQueryWrk(curs, conn,"UPDATE trade_rules SET b_limit{}={} WHERE coin_key= 1".format(c_rank,False))
-        else: 
-            b_flag = True
-            comnQueryWrk(curs, conn,"UPDATE trade_rules SET b_limit{}={} WHERE coin_key= 1".format(c_rank,True))            
+        b_flag = limit_flag['b_limit']
         
         simulate = limit_flag['simulate']
         total_am = round(comnQuerySel(curs, conn,"SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88)
@@ -221,7 +214,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         90 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 50 and cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 65)
     condition3 = t_record['position'] in checking[1:]
 
-    if condition1 or condition2 or condition3:
+    if(condition1 or condition2 or condition3) and b_flag == False:
         try:
             t_record['record']['case2_chk'] = 0
             t_record['record']['case1_chk'] = 0
