@@ -26,29 +26,47 @@ server_url = 'https://api.upbit.com'
 user_agent = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'} 
 def ubmi_call():
     url = 'https://ubcindex.com/home'
-    options = webdriver.ChromeOptions()
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("log-level=3")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-software-rasterizer")
+    options.add_argument("--window-position=-10000,-10000")
 
     try:
-        options.add_experimental_option("detach", True)
         driver = webdriver.Chrome(options=options)
         driver.get(url)
-        time.sleep(1)
-        html = BeautifulSoup(driver.page_source,features="html.parser")
+        time.sleep(10)
+        html = BeautifulSoup(driver.page_source, features="html.parser")
 
         p = re.compile('(?<=\">)(.*?)(?=<\/div>)')
-        total_ubmi = float(p.findall(str(html.find("div", {"class": "Price"})))[0].replace(',',""))
-        change_ubmi = float(p.findall(str(html.find("div", {"class": "changePrice"})))[0].replace(',',""))
+        price_ko_divs = html.find_all("div", {"class": "item active"})
+        total_ubmi = 0
+        change_ubmi = 0
         fear_greed = float(p.findall(str(html.find("div", {"class": "score"})))[0].replace(',',""))
-
-        if len(html.find_all("div", {"class": "price fall"})) > 0: change_ubmi = change_ubmi * -1
-        os.system("taskkill /f /im chromedriver.exe /t")
+        
+        for price_ko_div in price_ko_divs:
+            # price rise 또는 price fall 클래스 확인
+            minus_chk = False
+            price_status_div = price_ko_div.find("div", class_="price rise") or price_ko_div.find("div", class_="price fall")
+            if price_ko_div.find("div", class_="price fall"): minus_chk = True
+            if price_status_div:
+                item_price = price_status_div.find("div", {"class": "item Price"})
+                item_change_rate = price_status_div.find("div", {"class": "item changePrice"})
+                if item_price and item_change_rate:
+                    total_ubmi = float(item_price.text.strip().replace(',',""))
+                    change_ubmi = float(item_change_rate.text.strip().replace(',',""))
+                    if minus_chk == True: change_ubmi *= -1
+                    
         return total_ubmi, change_ubmi, fear_greed
-    except:
-        os.system("taskkill /f /im chromedriver.exe /t")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
         return None, None, None
-    
+    finally:
+        driver.quit()
+        
 def total_200_days_call(input_idx):# 인덱스명
     url = 'https://crix-api-endpoint.upbit.com/v1/crix/candles/days?code=CRIX.UPBIT.' + input_idx + '&count=200&to' # 최근 200일의 데이터 수집
     data = requests.get(url=url, headers=user_agent).json()
