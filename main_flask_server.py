@@ -278,6 +278,7 @@ def daily_report_chk():
 @scheduler.task('cron', id='ubmi_check', coalesce=False, max_instances=1, minute='*/5')
 def ubmi_check():
     conn, curs = comnQueryStrt()
+    t.sleep(30)
     try: 
         ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
         ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
