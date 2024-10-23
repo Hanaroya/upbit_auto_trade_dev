@@ -120,21 +120,9 @@ def coin_receive_buying(c_rank):
     finally:
         comnQueryCls(curs, conn)
 
-def case1_check(trade_factors, ubmi, ubmi_before): # 극단적인 과매도 하락세 확인 장치 
-    checker = -10
-    if ubmi < -50: checker = -15
-    elif ubmi > 50: checker = 5
-    elif ubmi - ubmi_before < -5: checker = -15
-    if trade_factors.iloc[-1]['signal'] < 0: 
-        if ((trade_factors.iloc[-1]['signal'] * 1.3) > (trade_factors.iloc[-1]['macd']
-                ) and (trade_factors.iloc[-4]['macd'] > trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
-        ) and (20 + checker > trade_factors.iloc[-1]['rsi_D']  and 20 + checker > trade_factors.iloc[-1]['rsi_K']):
-            return True
-    elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 확인 장치
-        if (((trade_factors.iloc[-1]['signal'] / 1.3) > trade_factors.iloc[-1]['macd']
-             ) and (trade_factors.iloc[-4]['macd'] > trade_factors.iloc[-3]['macd'] > trade_factors.iloc[-2]['macd'] > trade_factors.iloc[-1]['macd'])
-        ) and (20 + checker > trade_factors.iloc[-1]['rsi_D']  and 20 + checker > trade_factors.iloc[-1]['rsi_K']):
-            return True
+def case1_check(trade_factors): # MACD 크로스 하락세 확인
+    if (trade_factors.iloc[-1]['signal'] > trade_factors.iloc[-1]['macd']):
+        return True
     return False
 
 def macd_check(trade_factors):
@@ -146,19 +134,12 @@ def macd_check(trade_factors):
             return True                    
     return False
 
-def case2_check(trade_factors):
-     # 과매수 진입전 상승세 확인 장치
+def case2_check(trade_factors): # MACD 크로스 상승세 확인
     if trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['signal'] * 0.85) < trade_factors.iloc[-1]['macd']
-            ) and ((trade_factors.iloc[-2]['signal'] * 1.03) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.9)
-            ) and (trade_factors.iloc[-3]['macd'] < trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']
-            ):
+        if ((trade_factors.iloc[-1]['signal'] * 0.95) < trade_factors.iloc[-1]['macd']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['signal'] * 1.05) < trade_factors.iloc[-1]['macd']
-            ) and ((trade_factors.iloc[-2]['signal'] * 0.97) < trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 1.1)
-            ) and (trade_factors.iloc[-3]['macd'] < trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']
-            ):
+        if ((trade_factors.iloc[-1]['signal'] * 1.05) < trade_factors.iloc[-1]['macd']):
             return True
     return False
 
@@ -197,7 +178,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     case1_chk = case2_chk = False
 
     if t_record['record']['case1_chk'] == 0:
-        case1_chk = case1_check(trade_factors=trade_factors, ubmi=ubmi, ubmi_before=ubmi_before)
+        case1_chk = case1_check(trade_factors=trade_factors)
 
     if t_record['record']['case2_chk'] == 0 and ubmi - ubmi_before > 5:
         case2_chk = case2_check(trade_factors=trade_factors)
@@ -206,16 +187,22 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = cp
     if case2_chk:
         t_record['record']['case2_chk'] = cp
-    if t_record['record']['case1_chk'] > 0 and cp < (t_record['record']['case1_chk'] * 0.999): t_record['record']['case1_chk'] = cp
-   
-    condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and (
-        40 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 30 and (t_record['record']['case1_chk'] * 1.002) > cp > t_record['record']['case1_chk'])
-    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and (
-        90 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 50 and (t_record['record']['case2_chk'] * 1.002)>= cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 65)
-    condition3 = t_record['position'] in checking[1:]
+    if t_record['record']['case1_chk'] > 0 and cp <= (t_record['record']['case1_chk'] * 0.999): t_record['record']['case1_chk'] = cp
     
-    if cp > (t_record['record']['case2_chk'] * 1.002): t_record['record']['case2_chk'] = 0
-    if cp > (t_record['record']['case1_chk'] * 1.005): t_record['record']['case1_chk'] = 0
+    if (cp > (t_record['record']['case2_chk'] * 1.002)
+        ) or (t_record['record']['case2_chk'] > 0 and trade_factors.iloc[-1]['signal'] > trade_factors.iloc[-1]['macd']): 
+        t_record['record']['case2_chk'] = 0
+    if (cp > (t_record['record']['case1_chk'] * 1.005)
+        ) or (t_record['record']['case1_chk'] > 0 and trade_factors.iloc[-1]['signal'] < trade_factors.iloc[-1]['macd']): 
+        t_record['record']['case1_chk'] = 0
+    
+    condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and (
+        40 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] and (
+            t_record['record']['case1_chk'] * 1.002) > cp > t_record['record']['case1_chk'])
+    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and (
+        90 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 50 and (
+            t_record['record']['case2_chk'] * 1.002)>= cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 65)
+    condition3 = t_record['position'] in checking[1:]
 
     if(condition1 or condition2 or condition3) and b_flag == False:
         try:
