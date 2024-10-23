@@ -275,26 +275,26 @@ def daily_report_chk():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='ubmi_check', coalesce=False, max_instances=1, minute='*/5')
-def ubmi_check():
-    conn, curs = comnQueryStrt()
-    t.sleep(30)
-    try: 
-        ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
-        ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
-        query = ""
-        if ubmi < -20:
-            query = "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1"
-        if ubmi > 0:
-            query = "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1"
-        if ubmi - ubmi_before < -5: # 자꾸 시간대별로 안돌길래 변경
-            query = "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1"
-        if ubmi - ubmi_before > 5:
-            query = "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1"
-        comnQueryWrk(curs, conn, query)
-    except pymysql.MySQLError as e:
-        print(f"Error: {e}")
-    finally: comnQueryCls(curs, conn)   
+# @scheduler.task('cron', id='ubmi_check', coalesce=False, max_instances=1, second='*/5')
+# def ubmi_check():
+#     conn, curs = comnQueryStrt()
+#     t.sleep(30)
+#     try: 
+#         ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
+#         ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
+#         query = ""
+#         if ubmi < -20:
+#             query = "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1"
+#         if ubmi > 0:
+#             query = "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1"
+#         if ubmi - ubmi_before < -5: # 자꾸 시간대별로 안돌길래 변경
+#             query = "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1"
+#         if ubmi - ubmi_before > 5:
+#             query = "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1"
+#         comnQueryWrk(curs, conn, query)
+#     except pymysql.MySQLError as e:
+#         print(f"Error: {e}")
+#     finally: comnQueryCls(curs, conn)   
 
 @scheduler.task('cron', id='up_down_check', coalesce=False, max_instances=1, minute='*/5')
 def up_down_check():
