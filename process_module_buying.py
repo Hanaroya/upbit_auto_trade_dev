@@ -201,7 +201,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = 0
     
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and (
-        30 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 10 and (
+        50 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 25 and (
             t_record['record']['case1_chk'] * 1.002) > cp > t_record['record']['case1_chk'])
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and (
         90 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 50 and (
