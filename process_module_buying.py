@@ -191,7 +191,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = cp
     if case2_chk:
         t_record['record']['case2_chk'] = cp
-    if t_record['record']['case1_chk'] > 0 and cp <= (t_record['record']['case1_chk'] * 0.999): t_record['record']['case1_chk'] = cp
+    if t_record['record']['case1_chk'] > 0 and cp <= t_record['record']['case1_chk']: t_record['record']['case1_chk'] = cp
     
     if (cp > (t_record['record']['case2_chk'] * 1.002)
         ) or (t_record['record']['case2_chk'] > 0 and trade_factors.iloc[-1]['signal'] > trade_factors.iloc[-1]['macd']): 
