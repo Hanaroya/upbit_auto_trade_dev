@@ -121,8 +121,12 @@ def coin_receive_buying(c_rank):
         comnQueryCls(curs, conn)
 
 def case1_check(trade_factors): # MACD 크로스 하락세 확인
-    if (trade_factors.iloc[-1]['signal'] > trade_factors.iloc[-1]['macd']):
-        return True
+    if trade_factors.iloc[-1]['signal'] < 0:
+        if ((trade_factors.iloc[-1]['signal'] * 0.85) > trade_factors.iloc[-1]['macd']):
+            return True
+    elif trade_factors.iloc[-1]['signal'] > 0:
+        if ((trade_factors.iloc[-1]['signal'] * 1.15) > trade_factors.iloc[-1]['macd']):
+            return True
     return False
 
 def macd_check(trade_factors):
