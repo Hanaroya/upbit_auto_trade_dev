@@ -204,11 +204,13 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case2_chk'] = cp
     if t_record['record']['case1_chk'] > 0 and cp < t_record['record']['case1_chk'] and macd_check(trade_factors=trade_factors) == False: t_record['record']['case1_chk'] = cp
     
-    if (cp > (t_record['record']['case2_chk'] * 1.002)
-        ) or (t_record['record']['case2_chk'] > 0 and trade_factors.iloc[-1]['signal'] > trade_factors.iloc[-1]['macd']): 
+    if ((cp > (t_record['record']['case2_chk'] * 1.002)
+        ) or (t_record['record']['case2_chk'] > 0 and trade_factors.iloc[-1]['signal'] > trade_factors.iloc[-1]['macd'])
+        ) and case2_check(trade_factors=trade_factors) == False: 
         t_record['record']['case2_chk'] = 0
-    if (cp > (t_record['record']['case1_chk'] * 1.005)
-        ) or (t_record['record']['case1_chk'] > 0 and trade_factors.iloc[-1]['signal'] < trade_factors.iloc[-1]['macd']): 
+    if ((cp > (t_record['record']['case1_chk'] * 1.005)
+        ) or (t_record['record']['case1_chk'] > 0 and trade_factors.iloc[-1]['signal'] < trade_factors.iloc[-1]['macd'])
+        ) and case1_check(trade_factors=trade_factors) == False: 
         t_record['record']['case1_chk'] = 0
     
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and (
