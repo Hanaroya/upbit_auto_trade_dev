@@ -385,7 +385,7 @@ def sell_coin(c_list, t_record, total_am, curs, conn):
             elif up_chk_b > 0.05:
                 # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
                 # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 2분 지나면 블랙리스트에서 삭제하는 코드 생성
-                add_to_blacklist(t_record['c_code'], False, 15, curs, conn)
+                add_to_blacklist(t_record['c_code'], False, curs, conn)
                 mes = "매도 고점 도달"
         else: 
             mes = '이상 발생'
