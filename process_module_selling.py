@@ -234,7 +234,7 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi): # 차상의 경우 혹은
     checker = 0.3
     if ubmi < -20: checker = 0.1
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal']) and ( # MACD가 시그널 보다 낮은데 가격이 높을 경우
+        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10'] # 이동평균선 20이 10보다 클 경우
             ) or (trade_factors.iloc[-1]['rsi'] > 70
@@ -244,7 +244,7 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi): # 차상의 경우 혹은
             )):
             return True
     elif up_chk_b > checker and trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal']) and (
+        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal']
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10']
             ) or (trade_factors.iloc[-1]['rsi'] > 70
@@ -308,7 +308,7 @@ def sell_balanced_portfolio(total_am, curs, conn):
     total_loss = sum(loss for _, loss in losing_coins)
     if len(losing_coins) == 0: total_loss = 0
     
-    if (total_profit > (abs(total_loss) + 0.9)) or (total_loss < -3.95):
+    if (total_profit > (abs(total_loss) + 0.5)) or (total_loss < -4.95):
         # 이익이 손실을 커버할 수 있는 경우
         for coin, _ in losing_coins + winning_coins:
             t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(coin))[0]
