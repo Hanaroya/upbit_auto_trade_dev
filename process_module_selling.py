@@ -456,7 +456,7 @@ def selling_process_user(c_list, t_record, total_am:float, user_call:bool, curs,
         'state': 'wait'
         }
 
-    if user_call == True:
+    if user_call == True or up_chk_b > 1.4:
         try:    
             if s_flag == False: 
                 info = {}
