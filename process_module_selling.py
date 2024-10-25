@@ -266,8 +266,8 @@ def case3_check(trade_factors): # 케이스3의 경우 급락이 발생하여 �
     return False
 
 def case4_check(trade_factors, up_chk_b, ubmi): # 차악의 경우 조건이 불일치 하며 내려가기 시작할때
-    checker = -1.3
-    if ubmi < -20: checker = -0.8
+    checker = -1.8
+    if ubmi < -20: checker = -1.5
     if up_chk_b < checker and trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은 경우
@@ -375,12 +375,12 @@ def sell_coin(c_list, t_record, total_am, curs, conn):
         # 판매 메세지 변경
         if str(t_record['position']).find('reach profit point') > -1: 
             mes="매도 고점 도달"
-            add_to_blacklist(t_record['c_code'], 15, False, curs, conn)
+            add_to_blacklist(t_record['c_code'], False, curs, conn)
         elif str(t_record['position']).find('emergency') > -1: 
             if up_chk_b < 0.05:
                 # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
                 # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
-                add_to_blacklist(t_record['c_code'], 15, True,  curs, conn)
+                add_to_blacklist(t_record['c_code'], True,  curs, conn)
                 mes = "매도 저점 도달"
             elif up_chk_b > 0.05:
                 # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
@@ -389,7 +389,7 @@ def sell_coin(c_list, t_record, total_am, curs, conn):
                 mes = "매도 고점 도달"
         else: 
             mes = '이상 발생'
-            add_to_blacklist(t_record['c_code'], 15, True, curs, conn)
+            add_to_blacklist(t_record['c_code'], True, curs, conn)
         
         if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
             #이익금 정리
@@ -430,11 +430,11 @@ def sma_check(trade_factors):
 def add_to_blacklist(c_code, timeout, down, curs, conn):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if down == True:
-        query = """INSERT INTO blacklist (c_code, date, timeout, out_count ) VALUES ('{}', '{}', {}, 1) 
-                ON DUPLICATE KEY UPDATE c_code = '{}', date = '{}', timeout={}, out_count = out_count + 1""".format(c_code, now, timeout, c_code, now, timeout)
+        query = """INSERT INTO blacklist (c_code, date, timeout, out_count ) VALUES ('{}', '{}', 15, 1) 
+                ON DUPLICATE KEY UPDATE c_code = '{}', date = '{}', timeout=15, out_count = out_count + 1""".format(c_code, now, c_code, now)
     else: 
-        query = """INSERT INTO blacklist (c_code, date, timeout, out_count ) VALUES ('{}', '{}', {}, 0) 
-                ON DUPLICATE KEY UPDATE c_code = '{}', date = '{}', timeout={}""".format(c_code, now, timeout, c_code, now, timeout)
+        query = """INSERT INTO blacklist (c_code, date, timeout, out_count ) VALUES ('{}', '{}', 15, 0) 
+                ON DUPLICATE KEY UPDATE c_code = '{}', date = '{}', timeout=15""".format(c_code, now, c_code, now)
     comnQueryWrk(curs=curs, conn=conn, sqlText=query)
     
 
@@ -493,15 +493,15 @@ def selling_process_user(c_list, t_record, total_am:float, user_call:bool, curs,
                 if up_chk_b < 0:
                     # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
                     # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
-                    add_to_blacklist(t_record['c_code'], 15, True, curs, conn)
+                    add_to_blacklist(t_record['c_code'], True, curs, conn)
                 elif up_chk_b > 0:
                     # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
                     # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 2분 지나면 블랙리스트에서 삭제하는 코드 생성
-                    add_to_blacklist(t_record['c_code'], 15, False, curs, conn)
+                    add_to_blacklist(t_record['c_code'], False, curs, conn)
                 mes = "User ask for Sell" # 사용자 신청
             else: 
                 mes = '이상 발생'
-                add_to_blacklist(t_record['c_code'], 15, True, curs, conn)
+                add_to_blacklist(t_record['c_code'], True, curs, conn)
             
             if (user_call == 1):
                 if user_call == True: t_record['record']['strategy'] = 'case U S ' + t_record['record']['strategy']
@@ -626,21 +626,21 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
             # 판매 메세지 변경
             if str(t_record['position']).find('reach profit point') > -1: 
                 mes="매도 고점 도달"
-                add_to_blacklist(t_record['c_code'], 15, False, curs, conn)
+                add_to_blacklist(t_record['c_code'], False, curs, conn)
             elif str(t_record['position']).find('emergency') > -1: 
                 if up_chk_b < 0.05:
                     # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
                     # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 15분 지나면 블랙리스트에서 삭제하는 코드 생성
-                    add_to_blacklist(t_record['c_code'], 15, True, curs, conn)
+                    add_to_blacklist(t_record['c_code'], True, curs, conn)
                     mes = "매도 저점 도달"
                 elif up_chk_b > 0.05:
                     # 여기 블랙리스트 추가 Ex: {"c_code": "KRW-BTC", "date":"2024-10-03 08:51:30"} 
                     # 블랙리스트의 date 비교 하는 코드를 새로 추가하여 2분 지나면 블랙리스트에서 삭제하는 코드 생성
-                    add_to_blacklist(t_record['c_code'], 15, False, curs, conn)
+                    add_to_blacklist(t_record['c_code'], False, curs, conn)
                     mes = "매도 고점 도달"
             else: 
                 mes = '이상 발생'
-                add_to_blacklist(t_record['c_code'], 15, True, curs, conn)
+                add_to_blacklist(t_record['c_code'], True, curs, conn)
             
             if (str(t_record['position']).find('emergency') > -1 or str(t_record['position']).find('reach profit point') > -1):
                 if case1_chk == True: t_record['record']['strategy'] = 'case 1 S ' + t_record['record']['strategy']
