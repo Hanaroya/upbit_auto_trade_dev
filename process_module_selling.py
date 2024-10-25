@@ -234,23 +234,23 @@ def case2_check(trade_factors,sma200, up_chk_b, ubmi): # 차상의 경우 혹은
     checker = 0.3
     if ubmi < -20: checker = 0.1
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은데 가격이 높을 경우
+        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal']) and ( # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10'] # 이동평균선 20이 10보다 클 경우
             ) or (trade_factors.iloc[-1]['rsi'] > 70
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
                 trade_factors.iloc[-1]['rsi_K'] < 75 and trade_factors.iloc[-1]['rsi_D'] < 55))
             # 저번 회차의 최대값보다 현재 값이 높은데 rsi_K 값이 75 이하 일 경우 
-            ):
+            )):
             return True
     elif up_chk_b > checker and trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
+        if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal']) and (
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
             ) or (sma_check(trade_factors=sma200)== False and (sma200.iloc[-1]['sma20'] * 0.95) > sma200.iloc[-1]['sma10']
             ) or (trade_factors.iloc[-1]['rsi'] > 70
             ) or ((trade_factors.iloc[-2]['high'] * 1.002) < trade_factors.iloc[-1]['close'] and (
                 trade_factors.iloc[-1]['rsi_K'] < 80 and trade_factors.iloc[-1]['rsi_D'] < 50))
-            ): return True
+            )): return True
     return False
 
 def case3_check(trade_factors): # 케이스3의 경우 급락이 발생하여 확인 될 경우 발동
