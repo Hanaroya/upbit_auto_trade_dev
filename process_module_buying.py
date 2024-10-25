@@ -131,10 +131,10 @@ def is_v_shape_forming(data, window=7):
 
 def case1_check(trade_factors): # MACD 크로스 하락세 확인
     if trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['macd'] * 0.75) < trade_factors.iloc[-1]['signal']):
+        if ((trade_factors.iloc[-1]['macd'] * 0.65) < trade_factors.iloc[-1]['signal']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['macd'] * 1.25) < trade_factors.iloc[-1]['signal']):
+        if ((trade_factors.iloc[-1]['macd'] * 1.35) < trade_factors.iloc[-1]['signal']):
             return True
     return False
 
@@ -212,8 +212,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = 0
     
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and (
-        50 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 25) and (
-            cp >= t_record['record']['case1_chk']) and macd_check(trade_factors=trade_factors) == True
+        trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 35) and (
+            cp >= t_record['record']['case1_chk'])
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and (
         90 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 50 and (
             t_record['record']['case2_chk'] * 1.002)>= cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 65)
