@@ -427,7 +427,7 @@ def sma_check(trade_factors):
         return True
     return False
 
-def add_to_blacklist(c_code, timeout, down, curs, conn):
+def add_to_blacklist(c_code, down, curs, conn):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if down == True:
         query = """INSERT INTO blacklist (c_code, date, timeout, out_count ) VALUES ('{}', '{}', 15, 1) 
