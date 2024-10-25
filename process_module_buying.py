@@ -71,7 +71,7 @@ def coin_receive_buying(c_rank):
                 t_coin['record'] = {
                         'strategy': 'MACD rank: {}'.format(c_rank),
                         'close': trade_factors.iloc[-1]['close'],
-                        'MACD': round(trade_factors.iloc[-1]['macd'], 7),
+                        'macd': round(trade_factors.iloc[-1]['macd'], 7),
                         'MACD_Signal': round(trade_factors.iloc[-1]['signal'], 7),
                         'rsi_K': round(trade_factors.iloc[-1]['rsi_K'], 2),
                         'rsi_D': round(trade_factors.iloc[-1]['rsi_D'], 2),
@@ -120,6 +120,15 @@ def coin_receive_buying(c_rank):
     finally:
         comnQueryCls(curs, conn)
 
+
+def is_v_shape_forming(data, window=7):
+    # V자 형태가 생성되고 있는지 확인
+    if (data['macd'].shift(window).iloc[-1] > data['macd'].iloc[-1]) and \
+       (data['macd'].iloc[-1] == data['macd'].rolling(window=window).min().iloc[-1]) and \
+       (data['macd'].rolling(window=window).apply(lambda x: x.is_monotonic_increasing).iloc[-1] == True):
+        return True
+    return False
+
 def case1_check(trade_factors): # MACD 크로스 하락세 확인
     if trade_factors.iloc[-1]['signal'] < 0:
         if ((trade_factors.iloc[-1]['macd'] * 0.75) < trade_factors.iloc[-1]['signal']):
@@ -131,19 +140,23 @@ def case1_check(trade_factors): # MACD 크로스 하락세 확인
 
 def macd_check(trade_factors):
     if trade_factors.iloc[-1]['signal'] < 0: 
-        if (trade_factors.iloc[-1]['signal'] * 1.05) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.95):
+        if (trade_factors.iloc[-1]['signal'] * 1.005) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.995):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0: # 극단적인 과매도 후 복구 되는지 확인하는 모듈
-        if (trade_factors.iloc[-1]['signal'] * 0.95) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.05):
+        if ((trade_factors.iloc[-1]['signal'] * 0.995) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.005)
+            ) and (trade_factors.iloc[-2]['macd'] < (trade_factors.iloc[-2]['signal'] * 0.98)
+            ) and (trade_factors.iloc[-3]['macd'] < (trade_factors.iloc[-3]['signal'] * 0.95)):
             return True                    
     return False
 
 def case2_check(trade_factors): # MACD 크로스 상승세 확인
     if trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['signal'] * 0.999) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.95)):
+        if ((trade_factors.iloc[-1]['signal'] * 0.999) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.95)
+            ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['signal'] * 1.001) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.05)):
+        if ((trade_factors.iloc[-1]['signal'] * 1.001) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.05)
+            ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']):
             return True
     return False
 
@@ -191,7 +204,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = cp
     if case2_chk:
         t_record['record']['case2_chk'] = cp
-    if t_record['record']['case1_chk'] > 0 and cp <= t_record['record']['case1_chk']: t_record['record']['case1_chk'] = cp
+    if t_record['record']['case1_chk'] > 0 and cp < t_record['record']['case1_chk'] and is_v_shape_forming(data=trade_factors) == False: t_record['record']['case1_chk'] = cp
     
     if (cp > (t_record['record']['case2_chk'] * 1.002)
         ) or (t_record['record']['case2_chk'] > 0 and trade_factors.iloc[-1]['signal'] > trade_factors.iloc[-1]['macd']): 
@@ -201,8 +214,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = 0
     
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and (
-        50 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 25 and (
-            t_record['record']['case1_chk'] * 1.001) > cp >= t_record['record']['case1_chk'])
+        50 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 25) and (
+            cp >= t_record['record']['case1_chk']) and is_v_shape_forming(data=trade_factors) == True
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and (
         90 > trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 50 and (
             t_record['record']['case2_chk'] * 1.002)>= cp >= t_record['record']['case2_chk'] and t_record['rsi'] > 65)
