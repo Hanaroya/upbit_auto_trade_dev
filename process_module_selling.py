@@ -266,8 +266,8 @@ def case3_check(trade_factors): # 케이스3의 경우 급락이 발생하여 �
     return False
 
 def case4_check(trade_factors, up_chk_b, ubmi): # 차악의 경우 조건이 불일치 하며 내려가기 시작할때
-    checker = -1.8
-    if ubmi < -20: checker = -1.5
+    checker = -0.5
+    if ubmi < -20: checker = -0.2
     if up_chk_b < checker and trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은 경우
