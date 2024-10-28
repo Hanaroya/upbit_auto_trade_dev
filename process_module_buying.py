@@ -192,11 +192,8 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     # 초기화
     case1_chk = case2_chk = False
 
-    if t_record['record']['case1_chk'] == 0:
-        case1_chk = case1_check(trade_factors=trade_factors)
-
-    if t_record['record']['case2_chk'] == 0 and ubmi - ubmi_before > 5:
-        case2_chk = case2_check(trade_factors=trade_factors)
+    case1_chk = case1_check(trade_factors=trade_factors)
+    case2_chk = case2_check(trade_factors=trade_factors)
 
     if case1_chk:
         t_record['record']['case1_chk'] = cp
@@ -218,7 +215,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']) and (
         trade_factors.iloc[-2]['macd'] <= trade_factors.iloc[-3]['macd'] <= trade_factors.iloc[-4]['macd'])
     
-    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and (
+    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and case2_chk == True and (
         trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 55) and (
         trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']) and (
         trade_factors.iloc[-2]['macd'] >= trade_factors.iloc[-3]['macd'] >= trade_factors.iloc[-4]['macd'])
