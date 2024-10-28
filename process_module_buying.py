@@ -195,9 +195,9 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     case1_chk = case1_check(trade_factors=trade_factors)
     case2_chk = case2_check(trade_factors=trade_factors)
 
-    if case1_chk:
+    if case1_chk and t_record['record']['case1_chk'] == 0:
         t_record['record']['case1_chk'] = cp
-    if case2_chk:
+    if case2_chk and t_record['record']['case2_chk'] == 0:
         t_record['record']['case2_chk'] = cp
     if t_record['record']['case1_chk'] > 0 and cp < t_record['record']['case1_chk'] and macd_check(trade_factors=trade_factors) == False: t_record['record']['case1_chk'] = cp
     
