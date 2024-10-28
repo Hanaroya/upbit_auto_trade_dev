@@ -131,10 +131,10 @@ def is_v_shape_forming(data, window=7):
 
 def case1_check(trade_factors): # MACD 크로스 하락세 확인
     if trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['macd'] * 0.65) < trade_factors.iloc[-1]['signal']):
+        if ((trade_factors.iloc[-1]['macd'] * 0.85) < trade_factors.iloc[-1]['signal']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['macd'] * 1.35) < trade_factors.iloc[-1]['signal']):
+        if ((trade_factors.iloc[-1]['macd'] * 1.15) < trade_factors.iloc[-1]['signal']):
             return True
     return False
 
