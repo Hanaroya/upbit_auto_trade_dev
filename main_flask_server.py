@@ -295,11 +295,7 @@ def regular_buying_hour1():
         if now.hour > 4 and now.hour < 20:
             if dt == True:
                 comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit={} WHERE coin_key=1".format(False))
-        else:
-            ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now FROM trading_list WHERE coin_key=1")[0]
-            ubmi = ubmi_data['change_ubmi_now']
-            if ubmi > 50: comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1")
-            else: comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1")
+        else: comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1")
     except pymysql.MySQLError as e:
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   

@@ -131,10 +131,10 @@ def is_v_shape_forming(data, window=7):
 
 def case1_check(trade_factors): # MACD 크로스 하락세 확인
     if trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['macd'] * 0.8) < trade_factors.iloc[-1]['signal']):
+        if ((trade_factors.iloc[-1]['macd'] * 0.85) < trade_factors.iloc[-1]['signal']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['macd'] * 1.2) < trade_factors.iloc[-1]['signal']):
+        if ((trade_factors.iloc[-1]['macd'] * 1.15) < trade_factors.iloc[-1]['signal']):
             return True
     return False
 
@@ -175,8 +175,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     mes = ''
     dt_str = dt.strftime('%Y-%m-%d %H:%M:%S')
     global b_flag
-    ubmi_data = comnQuerySel(curs, conn,"SELECT change_ubmi_now, change_ubmi_before FROM trading_list WHERE coin_key=1")[0]
-    ubmi, ubmi_before = ubmi_data['change_ubmi_now'], ubmi_data['change_ubmi_before']
+    
     # ubmi_digit = comnQuerySel(curs, conn,"SELECT ubmi FROM trading_list WHERE coin_key=1")[0]['ubmi']
     # orderbook으로 구매 판매 조절 
     # Ask = 매도 호가 (판매 예약이 걸려있는 금액) 
