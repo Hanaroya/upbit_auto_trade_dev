@@ -215,16 +215,23 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = 0
     
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and ((
-        trade_factors.iloc[-2]['rsi_K'] < 10 and trade_factors.iloc[-2]['rsi_D'] < 10) and (
-        trade_factors.iloc[-3]['rsi_K'] < 10 and trade_factors.iloc[-3]['rsi_D'] < 10) and (
-        trade_factors.iloc[-4]['rsi_K'] < 10 and trade_factors.iloc[-4]['rsi_D'] < 10) 
+        trade_factors.iloc[-2]['rsi_K'] < 10 and trade_factors.iloc[-2]['rsi_D'] < 10) or (
+        trade_factors.iloc[-3]['rsi_K'] < 10 and trade_factors.iloc[-3]['rsi_D'] < 10) or (
+        trade_factors.iloc[-4]['rsi_K'] < 10 and trade_factors.iloc[-4]['rsi_D'] < 10) or (
+        trade_factors.iloc[-5]['rsi_K'] < 10 and trade_factors.iloc[-5]['rsi_D'] < 10) or (
+        trade_factors.iloc[-6]['rsi_K'] < 10 and trade_factors.iloc[-6]['rsi_D'] < 10) or (
+        trade_factors.iloc[-7]['rsi_K'] < 10 and trade_factors.iloc[-7]['rsi_D'] < 10) 
     )
     
     condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and t_record['record']['case2_chk'] < cp and (
         trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'] > 55) and (
         trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']) and (
-        trade_factors.iloc[-3]['macd'] < trade_factors.iloc[-2]['macd'])
-    
+        trade_factors.iloc[-3]['macd'] < trade_factors.iloc[-2]['macd']) and ((
+        trade_factors.iloc[-4]['macd'] < trade_factors.iloc[-4]['signal']) or ( # 최소 2시간 이내에 MACD 크로스 발생 징조가 있었는지 확인
+        trade_factors.iloc[-5]['macd'] < trade_factors.iloc[-5]['signal']) or (
+        trade_factors.iloc[-6]['macd'] < trade_factors.iloc[-6]['signal']) or (
+        trade_factors.iloc[-7]['macd'] < trade_factors.iloc[-7]['signal']) or (
+        trade_factors.iloc[-8]['macd'] < trade_factors.iloc[-8]['signal']))
     condition3 = t_record['position'] in checking[1:]
 
     if(condition1 or condition2 or condition3) and b_flag == False:
