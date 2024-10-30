@@ -576,9 +576,6 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
             ) and (up_chk_b < -2.75): 
             t_record['position'] = 'emergency 2 -3% check'
             
-    if sma200.iloc[-1]['sma10'] < sma200.iloc[-1]['sma20'] and sma_check(trade_factors=sma200) == False and (up_chk_b < -1.95): 
-        t_record['position'] = 'emergency 3 sudden drop' # 갑작스럽게 내릴 경우 1
-        
     if up_chk_b < -2.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 5 -1% check'
 
