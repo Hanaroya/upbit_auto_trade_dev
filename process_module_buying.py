@@ -226,7 +226,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
     condition3 = t_record['position'] in checking[1:]
     
     # 실제 구매 할지 블랙리스트 호출
-    blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist WHERE timeout > 0 or out_count < 3")
+    blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist WHERE timeout > 0 or out_count > 3")
     blacklist_codes = [item['c_code'] for item in blacklist]
     
     if(condition1 or condition2 or condition3) and b_flag == False and t_record['c_code'] not in blacklist_codes:
