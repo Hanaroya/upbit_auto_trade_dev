@@ -26,9 +26,6 @@ def coin_receive_buying(c_rank):
         limit_flag = comnQuerySel(curs, conn,"SELECT * FROM trade_rules WHERE coin_key=1")[0] # 각 멀티 프로세스별 제한 상태 받아오기
         coin_list = json.loads(trading_list['coin_pl'])
         
-        # 블랙리스트 호출
-        blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist WHERE timeout > 0 and out_count < 3")
-        blacklist_codes = [item['c_code'] for item in blacklist]
         
         t_list = json.loads(trading_list['t_list{}'.format(c_rank)]) # 구매 테이블에 있는 코인 만 불러오기
         
@@ -42,11 +39,7 @@ def coin_receive_buying(c_rank):
         
         for i in t_list['list']:
             idx = i
-            try:
-                if coin_list[i] not in blacklist_codes:
-                    t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list WHERE c_code='{}'".format(coin_list[i]))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
-                else:
-                    continue
+            try: t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list WHERE c_code='{}'".format(coin_list[i]))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
             except Exception as e: 
                 print(e)
                 print('\ncoin data not found\n')
@@ -231,8 +224,12 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         trade_factors.iloc[-7]['macd'] < trade_factors.iloc[-7]['signal']) or (
         trade_factors.iloc[-8]['macd'] < trade_factors.iloc[-8]['signal']))
     condition3 = t_record['position'] in checking[1:]
-
-    if(condition1 or condition2 or condition3) and b_flag == False:
+    
+    # 실제 구매 할지 블랙리스트 호출
+    blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist WHERE timeout > 0 and out_count < 3")
+    blacklist_codes = [item['c_code'] for item in blacklist]
+    
+    if(condition1 or condition2 or condition3) and b_flag == False and t_record['c_code'] not in blacklist_codes:
         try:
             t_record['record']['case2_chk'] = 0
             t_record['record']['case1_chk'] = 0
