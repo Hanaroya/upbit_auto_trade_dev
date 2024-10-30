@@ -254,17 +254,17 @@ def case2_check(t_record, trade_factors, sma200, up_chk_b, ubmi): # 차상의 �
             )): return True
     return False
 
-def case3_check(trade_factors): # 케이스3의 경우 급락이 발생하여 확인 될 경우 발동
-    p_up = (trade_factors.iloc[-2]['high'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
-    p_low = (trade_factors.iloc[-2]['low'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
-    candle = (trade_factors.iloc[-2]['close'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
-    p_up += (trade_factors.iloc[-1]['high'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
-    p_low += (trade_factors.iloc[-1]['low'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
-    candle += (trade_factors.iloc[-1]['close'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
-    if (p_up < 0.1 and p_low < -0.75 and candle < -0.8
-        ) and (trade_factors.iloc[-2]['open'] > (trade_factors.iloc[-2]['close'] * 1.003)):
-        return True 
-    return False
+# def case3_check(trade_factors): # 케이스3의 경우 급락이 발생하여 확인 될 경우 발동
+#     p_up = (trade_factors.iloc[-2]['high'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
+#     p_low = (trade_factors.iloc[-2]['low'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
+#     candle = (trade_factors.iloc[-2]['close'] - trade_factors.iloc[-2]['open']) / trade_factors.iloc[-2]['open'] * 100
+#     p_up += (trade_factors.iloc[-1]['high'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
+#     p_low += (trade_factors.iloc[-1]['low'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
+#     candle += (trade_factors.iloc[-1]['close'] - trade_factors.iloc[-1]['open']) / trade_factors.iloc[-1]['open'] * 100
+#     if (p_up < 0.1 and p_low < -0.75 and candle < -0.8
+#         ) and (trade_factors.iloc[-2]['open'] > (trade_factors.iloc[-2]['close'] * 1.003)):
+#         return True 
+#     return False
 
 def case4_check(trade_factors, up_chk_b, ubmi): # 차악의 경우 조건이 불일치 하며 내려가기 시작할때
     checker = -1.5
@@ -557,13 +557,12 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     if (t_record['record']['rsi_S'] not in ['ready', 'go']
         ) and case2_check(t_record=t_record, trade_factors=c_list, sma200=sma200, ubmi=ubmi, up_chk_b=up_chk_b) == True and t_record['hold'] == True:
         case2_chk, t_record['position'] = True, 'reach profit point case 2'
-    if (case3_check(trade_factors=c_list) == True or (
-        case4_check(trade_factors=c_list, ubmi=ubmi, up_chk_b=up_chk_b) == True)) and (
+    if (case4_check(trade_factors=c_list, ubmi=ubmi, up_chk_b=up_chk_b) == True) and (
             t_record['hold'] == True):
         if up_chk_b > 0.05: 
-            t_record['position'] = 'reach profit point case 3'
+            t_record['position'] = 'reach profit point case 4'
         elif up_chk_b < -0.05: 
-            t_record['position'] = 'emergency case 3'
+            t_record['position'] = 'emergency case 4'
         case3_chk = True
     if t_record['r_holding'] == 0 and simulate == False: 'emergency real coin sold'
     if c_list.iloc[-1]['signal'] > 0:
