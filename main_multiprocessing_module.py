@@ -206,7 +206,7 @@ def daily_report():
     
     comnQueryWrk(curs, conn, 'TRUNCATE trade_history')
     comnQueryWrk(curs, conn, 'TRUNCATE trading_log')
-    comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit={}, daily_report_chk={} WHERE coin_key=1".format(False, True)) # 수익 업데이트 완료까지 구매 제한
+    comnQueryWrk(curs, conn, "UPDATE trade_rules SET daily_report_chk=1 WHERE coin_key=1") # 수익 업데이트 완료까지 구매 제한
     del coin_b
     comnQueryCls(curs, conn)
 
