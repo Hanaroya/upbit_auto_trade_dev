@@ -311,7 +311,7 @@ def sell_balanced_portfolio(total_am, curs, conn):
     total_loss = sum(loss for _, loss in losing_coins)
     if len(losing_coins) == 0: total_loss = 0
     
-    if (total_profit > (abs(total_loss) + 4.7)):
+    if (total_profit > (abs(total_loss) + 1.5)):
         # 이익이 손실을 커버할 수 있는 경우
         for coin, _ in losing_coins + winning_coins:
             t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(coin))[0]
@@ -581,7 +581,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
     if up_chk_b < -2.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'emergency 5 -1% check'
 
-    if up_chk_b > 0.95 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
+    if up_chk_b > 0.85 and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'reach profit point case 1.4'
     
     info = {
