@@ -23,8 +23,7 @@ def coin_receive_regular_selling():
         dt = datetime.datetime.now()
         conn, curs = comnQueryStrt() # SQL 서버 접속
         total_am = round(comnQuerySel(curs, conn,"SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am'] * 0.88)
-        sell_balanced_portfolio(total_am, curs, conn)
-        
+
         limit_flag = comnQuerySel(curs, conn,"SELECT * FROM trade_rules WHERE coin_key=1")[0] # 각 멀티 프로세스별 제한 상태 받아오기
         # trading_list = comnQuerySel(curs, conn,"SELECT * FROM trading_list WHERE coin_key=1")[0] # 각 멀티 프로세스별 접속 코인 리스트 받아오기
         sql_result = comnQuerySel(curs, conn,"SELECT c_code FROM coin_list_selling") # 판매 테이블에 있는 것만 따로 불러오기
@@ -35,6 +34,8 @@ def coin_receive_regular_selling():
         s_flag = limit_flag['s_limit'] # 판매 제한 확인하기
         
         simulate = limit_flag['simulate']
+        
+        sell_balanced_portfolio(total_am, curs, conn)
          # 시작전 모집된 코인의 벨런스 조절하는 파트
         for i in sql_result:
             try: t_coin = comnQuerySel(curs, conn,"SELECT * FROM coin_list_selling WHERE c_code='{}'".format(i['c_code']))[0] # DB에서 코인이름을 기준으로 직접 값을 불러오는 파트
