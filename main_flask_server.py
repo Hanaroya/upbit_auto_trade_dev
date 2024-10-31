@@ -292,7 +292,7 @@ def regular_buying_hour1():
     try: 
         now = datetime.datetime.now()
         dt = comnQuerySel(curs, conn,"SELECT b_limit FROM trade_rules WHERE coin_key=1")[0]['b_limit']
-        if now.hour > 4 and now.hour < 20:
+        if (now.hour > 4 and now.hour < 11) or (now.hour > 15 and now.hour < 20):
             if dt == True:
                 comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1")
         else: comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1")
