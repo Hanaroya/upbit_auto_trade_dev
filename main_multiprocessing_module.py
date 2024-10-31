@@ -146,9 +146,9 @@ def daily_report():
     myprops = gp.get_properties()
     now = datetime.datetime.now()
     conn, curs = comnQueryStrt()
-    comnQueryWrk(curs, conn, "PURGE BINARY LOGS BEFORE '{}';".format(now)) # 매일 밤 11시 59분, SQL Server 로그 삭제, 이익금 반영
+    comnQueryWrk(curs, conn, "PURGE BINARY LOGS BEFORE NOW();") # 매일 밤 11시 59분, SQL Server 로그 삭제, 이익금 반영
     mm.post_message("#auto-trade", "19:59pm: purge mysql server logs")
-    comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit={} WHERE coin_key=1".format(True)) # 수익 업데이트 완료까지 구매 제한
+    comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1") # 수익 업데이트 완료까지 구매 제한
     simulate = comnQuerySel(curs, conn, "SELECT simulate FROM trade_rules WHERE coin_key=1")[0]['simulate']
 
     or_am = comnQuerySel(curs, conn, "SELECT or_am from deposit_holding WHERE coin_key=1")[0]['or_am']
@@ -161,12 +161,12 @@ def daily_report():
     remain = (dp_am % 11) 
     dp_am = dp_am - remain
     sv_am = round(or_new * 0.12) + remain
-    sql = 'UPDATE deposit_holding SET dp_am={}, sv_am={}, or_am={},pr_am={} WHERE coin_key=1;'.format(dp_am,sv_am,or_new,0)
+    sql = 'UPDATE deposit_holding SET dp_am={}, sv_am={}, or_am={},pr_am=0 WHERE coin_key=1;'.format(dp_am,sv_am,or_new)
     comnQueryWrk(curs, conn, sql)
     sql = "INSERT INTO trade_result_history(date_time, total_investment, sv_am, income) VALUES ('{}',{},{},{})".format(now, or_am, sv_pr, pr_am)
     comnQueryWrk(curs, conn, sql)
     mm.post_message("#auto-trade", "Income added")
-    comnQueryWrk(curs, conn, "INSERT INTO {}(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("trading_log", "Income Added",'', "", '오늘자 정산 완료',now))
+    comnQueryWrk(curs, conn, "INSERT INTO trading_log(c_code, position, record, report,dt_log) VALUES ('{}','{}','{}','{}','{}')".format("Income Added",'', "", '오늘자 정산 완료',now))
     
     coin_b = {'b_list':comnQuerySel(curs, conn, "SELECT * FROM trade_history")}
     coin_log = {'log_today': comnQuerySel(curs, conn, "SELECT * FROM trading_log")}
