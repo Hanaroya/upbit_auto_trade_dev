@@ -286,19 +286,19 @@ def up_down_check():
         print(f"Error: {e}")
     finally: comnQueryCls(curs, conn)   
 
-@scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, minute='*/5')
-def regular_buying_hour1():
-    conn, curs = comnQueryStrt()
-    try: 
-        now = datetime.datetime.now()
-        dt = comnQuerySel(curs, conn,"SELECT b_limit FROM trade_rules WHERE coin_key=1")[0]['b_limit']
-        if (now.hour > 4 and now.hour < 11) or (now.hour > 15 and now.hour < 20):
-            if dt == True:
-                comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1")
-        else: comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1")
-    except pymysql.MySQLError as e:
-        print(f"Error: {e}")
-    finally: comnQueryCls(curs, conn)   
+# @scheduler.task('cron', id='regular_buying_hour1', coalesce=False, max_instances=1, minute='*/5')
+# def regular_buying_hour1():
+#     conn, curs = comnQueryStrt()
+#     try: 
+#         now = datetime.datetime.now()
+#         dt = comnQuerySel(curs, conn,"SELECT b_limit FROM trade_rules WHERE coin_key=1")[0]['b_limit']
+#         if (now.hour > 4 and now.hour < 11) or (now.hour > 15 and now.hour < 20):
+#             if dt == True:
+#                 comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=0 WHERE coin_key=1")
+#         else: comnQueryWrk(curs, conn, "UPDATE trade_rules SET b_limit=1 WHERE coin_key=1")
+#     except pymysql.MySQLError as e:
+#         print(f"Error: {e}")
+#     finally: comnQueryCls(curs, conn)   
     
 @scheduler.task('cron', id='buy_check', coalesce=False, max_instances=1, second="*/10")
 def buy_check():
