@@ -208,23 +208,25 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
         t_record['record']['case1_chk'] = 0
     
     condition1 = t_record['record']['case1_chk'] > 0 and t_record['hold'] == False and ((
+        trade_factors.iloc[-2]['rsi_K'] < 10 and trade_factors.iloc[-2]['rsi_D'] < 10) or (
+        trade_factors.iloc[-3]['rsi_K'] < 10 and trade_factors.iloc[-3]['rsi_D'] < 10) or (
         trade_factors.iloc[-4]['rsi_K'] < 10 and trade_factors.iloc[-4]['rsi_D'] < 10) or (
         trade_factors.iloc[-5]['rsi_K'] < 10 and trade_factors.iloc[-5]['rsi_D'] < 10) or (
         trade_factors.iloc[-6]['rsi_K'] < 10 and trade_factors.iloc[-6]['rsi_D'] < 10) or (
         trade_factors.iloc[-7]['rsi_K'] < 10 and trade_factors.iloc[-7]['rsi_D'] < 10) 
-    ) and (trade_factors.iloc[-1]['rsi_K'] > 30 and trade_factors.iloc[-1]['rsi_D'] > 20 and trade_factors.iloc[-1]['rsi_K'] > trade_factors.iloc[-1]['rsi_D'])
+    ) and (trade_factors.iloc[-1]['rsi_K'] > 30 and trade_factors.iloc[-1]['rsi_D'] > 20)
     
-    condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and t_record['record']['case2_chk'] < cp and (
-        90 > trade_factors.iloc[-1]['rsi_K'] > 45 and 80 > trade_factors.iloc[-1]['rsi_D'] > 45) and (
-        trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']) and (
-        trade_factors.iloc[-3]['macd'] < trade_factors.iloc[-2]['macd'])
+    # condition2 = t_record['record']['case2_chk'] > 0 and t_record['hold'] == False and t_record['record']['case2_chk'] < cp and (
+    #     90 > trade_factors.iloc[-1]['rsi_K'] > 45 and 80 > trade_factors.iloc[-1]['rsi_D'] > 45) and (
+    #     trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']) and (
+    #     trade_factors.iloc[-3]['macd'] < trade_factors.iloc[-2]['macd'])
     condition3 = t_record['position'] in checking[1:]
     
     # 실제 구매 할지 블랙리스트 호출
     blacklist = comnQuerySel(curs, conn, "SELECT c_code FROM blacklist WHERE timeout > 0 or out_count > 3")
     blacklist_codes = [item['c_code'] for item in blacklist]
     
-    if(condition1 or condition2 or condition3) and b_flag == False and t_record['c_code'] not in blacklist_codes:
+    if(condition1 or condition3) and b_flag == False and t_record['c_code'] not in blacklist_codes:
         try:
             t_record['record']['case2_chk'] = 0
             t_record['record']['case1_chk'] = 0
@@ -282,7 +284,7 @@ def buying_process(trade_factors, sma200, c_rank, t_record, total_am:float, curs
             t_record['deposit'] = deposit
             
             if condition1 == True: t_record['record']['strategy'] = 'case 1 B ' + t_record['record']['strategy']
-            elif condition2 == True: t_record['record']['strategy'] = 'case 2 B ' + t_record['record']['strategy']
+            # elif condition2 == True: t_record['record']['strategy'] = 'case 2 B ' + t_record['record']['strategy']
             report = "c_code: " + t_record['c_code'] +"\nprocess: BUY" + "\nc_rank: "+str(c_rank)+"\ncurrent price: "+str(cp)+"\ndate_time: " + str(dt_str) +"\nRSI: "+ str(t_record['rsi']) + "\nDeposit: W {}".format(t_record['deposit']) + "\nPurchased: {}".format(t_record['record']['strategy'])
             mp.post_message("#auto-trade", report) #Slack에 메세지 전송
             lst={'c_code': t_record['c_code'], 'c_rank': c_rank, 'current_price': cp, 'percent': -0.05, 'date_time':dt, 
