@@ -142,11 +142,11 @@ def macd_check(trade_factors):
 
 def case2_check(trade_factors): # MACD 크로스 상승세 확인
     if trade_factors.iloc[-1]['signal'] < 0:
-        if ((trade_factors.iloc[-1]['signal'] * 0.91) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
+        if ((trade_factors.iloc[-1]['signal'] * 0.99) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 0.8)
             ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']):
             return True
     elif trade_factors.iloc[-1]['signal'] > 0:
-        if ((trade_factors.iloc[-1]['signal'] * 1.09) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2)
+        if ((trade_factors.iloc[-1]['signal'] * 1.01) < trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2)
             ) and (trade_factors.iloc[-2]['macd'] < trade_factors.iloc[-1]['macd']):
             return True
     return False
