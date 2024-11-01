@@ -236,7 +236,7 @@ def case2_check(t_record, trade_factors, sma200, up_chk_b, ubmi): # 차상의 �
     if ubmi < 50: checker = 0.1
     if str(t_record['record']['strategy']).find('case 1 B') > -1: 
         checker = 0.5
-        if ubmi < 50: checker = 0.2
+        if ubmi < 100: checker = 0.2
     if up_chk_b > checker and trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] # MACD가 시그널 보다 낮은데 가격이 높을 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은데 가격이 높을 경우
@@ -271,7 +271,7 @@ def case2_check(t_record, trade_factors, sma200, up_chk_b, ubmi): # 차상의 �
 
 def case4_check(trade_factors, up_chk_b, ubmi): # 차악의 경우 조건이 불일치 하며 내려가기 시작할때
     checker = -1.5
-    if ubmi < 50: checker = -0.95
+    if ubmi < 100: checker = -0.95
     if up_chk_b < checker and trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은 경우
@@ -583,7 +583,7 @@ def selling_process(c_list, t_record, sma200, total_am:float, curs, conn): # 가
         t_record['position'] = 'emergency 5 -1% check'
 
     checker = 0.85
-    if ubmi < 50: checker = 0.3
+    if ubmi < 100: checker = 0.3
     if up_chk_b > checker and (str(t_record['position']).find('emergency') == -1 or str(t_record['position']).find('reach profit point') == -1): 
         t_record['position'] = 'reach profit point case 1.4'
     
