@@ -448,18 +448,18 @@ def selling_process_wrapper1(): # 판매용 메소드 실행시키기 5분 간�
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
 
-@scheduler.task('cron', id='selling_process_wrapper2', coalesce=False, max_instances=1, second='*/5')
+@scheduler.task('cron', id='selling_process_wrapper2', coalesce=False, max_instances=1, second='*/2')
 def selling_process_wrapper2(): # 판매용 메소드 실행시키기 5분 간격
     if selling_process_lock2.acquire(blocking=False):
-        conn, curs = comnQueryStrt()
+        # conn, curs = comnQueryStrt()
         try: 
-            st = comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_holding WHERE user_call=1")[0]['COUNT(*)']
-            if st > 0:
-                t.sleep(0.5)
-                selling_process_user()
+            # st = comnQuerySel(curs, conn,"SELECT COUNT(*) FROM coin_holding WHERE user_call=1")[0]['COUNT(*)']
+            # if st > 0:
+            t.sleep(0.5)
+            selling_process_user()
         finally:
             selling_process_lock2.release()
-            comnQueryCls(curs=curs,conn=conn)
+            # comnQueryCls(curs=curs,conn=conn)
     else:
         print("이전 selling_process가 아직 실행 중입니다.")
 
