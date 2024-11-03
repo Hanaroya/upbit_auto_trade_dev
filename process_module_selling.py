@@ -271,7 +271,7 @@ def case2_check(t_record, trade_factors, sma200, up_chk_b, ubmi): # 차상의 �
 
 def case4_check(trade_factors, up_chk_b, ubmi): # 차악의 경우 조건이 불일치 하며 내려가기 시작할때
     checker = 0.05
-    if ubmi < 100: checker = -0.05
+    if ubmi < 100: checker = -0.1
     if up_chk_b < checker and trade_factors.iloc[-1]['signal'] > 0:
         if ((trade_factors.iloc[-1]['macd'] < (trade_factors.iloc[-1]['signal'] * 1.2) # MACD가 시그널 보다 낮은 경우
             ) or (trade_factors.iloc[-1]['rsi_K'] < (trade_factors.iloc[-1]['rsi_D'] - 5) # rsi_K 값이 rsi_D 값보다 낮은 경우
